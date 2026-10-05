@@ -34,6 +34,11 @@ description = "Build the executable and replay the same session against it"
 depends = ["install", "build"]
 run = "bun tests/executable.mjs"
 
+[tasks."test:pwa"]
+description = "Check the installable app: Chrome's install criteria, offline caching, and playing offline"
+depends = ["install"]
+run = "bun tests/pwa.mjs"
+
 [tasks."test:update"]
 description = "Re-record the replay baseline after an intended change"
 depends = ["install"]
