@@ -1,5 +1,8 @@
 // Checks the installable app (PWA): Chrome considers it installable, the service worker caches every file
 // the game uses, and after going offline the game still loads and plays.
+//
+//   bun tests/pwa.mjs              against the launcher, served locally
+//   bun tests/pwa.mjs --url=<url>  against a deployed copy, e.g. the GitHub Pages site
 
 import { chromium } from 'playwright-core';
 import { fileURLToPath } from 'url';
@@ -8,12 +11,14 @@ import { tmpdir } from 'os';
 
 const ROOT = new URL('..', import.meta.url);
 const PORT = 41898;
-const URL_ = `http://127.0.0.1:${PORT}/`;
+const URL_ = process.argv.find(a => a.startsWith('--url='))?.slice('--url='.length) ?? `http://127.0.0.1:${PORT}/`;
+const BASE = new URL(URL_).pathname;
 const failures = [];
 const check = (ok, what) => { console.log(`${ok ? '✓' : '✗'} ${what}`); if (!ok) failures.push(what); };
 
-const server = Bun.spawn(['bun', fileURLToPath(new URL('launcher/server.ts', ROOT)), `--port=${PORT}`, '--no-open'],
-  { stdout: 'ignore', stderr: 'inherit' });
+const server = process.argv.some(a => a.startsWith('--url=')) ? null
+  : Bun.spawn(['bun', fileURLToPath(new URL('launcher/server.ts', ROOT)), `--port=${PORT}`, '--no-open'],
+    { stdout: 'ignore', stderr: 'inherit' });
 // A persistent profile: Chrome treats Playwright's default throwaway profiles as incognito, where nothing is installable
 const profile = mkdtempSync(`${tmpdir()}/pwa-test-`);
 const context = await chromium.launchPersistentContext(profile, {
@@ -44,15 +49,21 @@ try {
     return keys.map(r => new URL(r.url).pathname);
   });
   const scripts = await page.evaluate(() => [...document.scripts].map(s => new URL(s.src).pathname));
-  const needed = ['/', '/style.css', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png',
-    '/icons/apple-touch-icon.png', ...scripts];
+  const needed = [...['', 'style.css', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
+    'icons/apple-touch-icon.png'].map(p => BASE + p), ...scripts];
   const missing = needed.filter(p => !cached.includes(p));
   check(missing.length === 0, `service worker cached all ${needed.length} files${missing.length ? ', missing: ' + missing : ''}`);
 
-  // Offline for real: no network for the browser, and the server is gone too
-  server.kill(); await server.exited;
+  // Offline for real: no network for the browser, and a local server is gone too
+  if (server) { server.kill(); await server.exited; }
   await context.setOffline(true);
   await page.reload();
+  // An outside request (which the service worker doesn't handle) shows whether we're really offline. It runs in
+  // its own tab so its expected network error isn't counted as a game error.
+  const probe = await context.newPage();
+  const reachable = await probe.evaluate(() => fetch('https://example.com/', { mode: 'no-cors' }).then(() => true, () => false));
+  await probe.close();
+  check(!reachable, 'the browser is really offline');
   await page.tap('#rooms .room:nth-child(1)');
   await page.waitForTimeout(1000);
   const before = await page.evaluate(() => save.coins);
@@ -66,6 +77,6 @@ try {
 } finally {
   await context.close();
   rmSync(profile, { recursive: true, force: true });
-  server.kill();
+  server?.kill();
 }
 process.exit(failures.length ? 1 : 0);
