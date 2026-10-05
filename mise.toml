@@ -29,6 +29,11 @@ description = "Replay a scripted play session and compare it with the recorded b
 depends = ["install"]
 run = "bun tests/replay.mjs"
 
+[tasks."test:exe"]
+description = "Build the executable and replay the same session against it"
+depends = ["install", "build"]
+run = "bun tests/executable.mjs"
+
 [tasks."test:update"]
 description = "Re-record the replay baseline after an intended change"
 depends = ["install"]

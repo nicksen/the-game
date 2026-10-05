@@ -5,8 +5,9 @@
 // code always produces the same frames. Every 3rd frame the canvas pixels and HUD markup are hashed and
 // compared with tests/replay-baseline.txt.
 //
-//   npm test               compare against the baseline
-//   npm run test:update    re-record the baseline after an intended change in behavior or looks
+//   mise run test           compare against the baseline
+//   mise run test:update    re-record the baseline after an intended change in behavior or looks
+//   --url=<url>             play the game from a URL instead of index.html (used to test the executable)
 //
 // Pixel hashes depend on the browser's rendering and fonts, so a Chrome update or another OS can
 // change them; re-record the baseline (and check the game still looks right) when that happens.
@@ -16,7 +17,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const ROOT = new URL('..', import.meta.url);
-const GAME_URL = new URL('index.html', ROOT).href;
+const GAME_URL = process.argv.find(a => a.startsWith('--url='))?.slice('--url='.length) ?? new URL('index.html', ROOT).href;
 const BASELINE = fileURLToPath(new URL('tests/replay-baseline.txt', ROOT));
 const ACTUAL = fileURLToPath(new URL('tests/replay-actual.txt', ROOT));
 const ALL_TOOLS = ['grab', 'punch', 'chicken', 'fish', 'tomato', 'bat', 'hammer', 'bomb', 'zap', 'piano',
@@ -138,7 +139,7 @@ if (process.argv.includes('--update')) {
   process.exit(0);
 }
 if (!existsSync(BASELINE)) {
-  console.error('✗ No baseline yet. Record one with: npm run test:update');
+  console.error('✗ No baseline yet. Record one with: mise run test:update');
   process.exit(1);
 }
 
@@ -153,6 +154,6 @@ if (i === -1 && expected.length === actual.length) {
   console.error(`✗ Replay differs from the baseline at line ${at + 1}, during step "${cur}" (previous step: "${prev}"):`);
   console.error(`    expected  ${expected[at] ?? '(nothing)'}\n    actual    ${actual[at] ?? '(nothing)'}`);
   console.error('  Full run written to tests/replay-actual.txt.');
-  console.error('  If the change is intended, re-record with: npm run test:update');
+  console.error('  If the change is intended, re-record with: mise run test:update');
   process.exit(1);
 }
