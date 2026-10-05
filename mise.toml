@@ -1,0 +1,16 @@
+[tools]
+bun = "1.4.2"
+
+[tasks.install]
+description = "Install dependencies"
+run = "bun install --frozen-lockfile"
+
+[tasks.test]
+description = "Replay a scripted play session and compare it with the recorded baseline"
+depends = ["install"]
+run = "bun tests/replay.mjs"
+
+[tasks."test:update"]
+description = "Re-record the replay baseline after an intended change"
+depends = ["install"]
+run = "bun tests/replay.mjs --update"
