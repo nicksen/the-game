@@ -72,8 +72,29 @@ function drawParticles() {
 }
 
 // ---------- Comic text ----------
+const TEXT_MAX_POP = 1.2;
+
 function addText(x, y, text, color, size, rot = 0) {
-  texts.push({ x, y, text, color, size, rot, life: 0, max: 50 });
+  texts.push({ x, y, rot, life: 0, max: 50, sprite: textSprite(text, color, size) });
+}
+
+// Outlined text is slow to draw (it can't use the browser's glyph cache), and redrawing every live text each
+// frame stutters on phones. So each text is drawn once into its own canvas, at its biggest pop size and the
+// screen's pixel density, and that image is what gets scaled and rotated every frame.
+function textSprite(text, color, size) {
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  const font = `900 ${size}px Impact, "Arial Black", sans-serif`, lw = Math.max(3, size / 7);
+  g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const m = g.measureText(text), pad = lw;
+  const left = m.actualBoundingBoxLeft + pad, top = m.actualBoundingBoxAscent + pad;
+  const w = left + m.actualBoundingBoxRight + pad, h = top + m.actualBoundingBoxDescent + pad;
+  const res = TEXT_MAX_POP * (canvas.width / W || 1);
+  c.width = Math.ceil(w * res); c.height = Math.ceil(h * res);
+  g.scale(res, res);
+  g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.strokeStyle = '#000'; g.lineWidth = lw; g.strokeText(text, left, top);
+  g.fillStyle = color; g.fillText(text, left, top);
+  return { image: c, left, top, w, h };
 }
 
 function stepTexts() {
@@ -91,9 +112,8 @@ function drawTexts() {
     ctx.save();
     ctx.globalAlpha = Math.min(1, (t.max - t.life) / 15);
     ctx.translate(t.x, t.y); ctx.rotate(t.rot); ctx.scale(pop, pop);
-    ctx.font = `900 ${t.size}px Impact, "Arial Black", sans-serif`;
-    ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(3, t.size / 7); ctx.strokeText(t.text, 0, 0);
-    ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0);
+    const s = t.sprite;
+    ctx.drawImage(s.image, -s.left, -s.top, s.w, s.h);
     ctx.restore();
   }
 }
