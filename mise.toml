@@ -11,7 +11,7 @@ run = "bun launcher/server.ts"
 
 [tasks.build]
 description = "Compile a self-contained executable for this computer into dist/"
-sources = ["launcher/*.ts", "index.html", "style.css", "js/*.js"]
+sources = ["launcher/*.ts", "index.html", "style.css", "js/*.js", "sw.js", "manifest.webmanifest", "icons/*.png"]
 outputs = ["dist/smack-the-dummy"]
 run = "bun build --compile --minify launcher/server.ts --outfile dist/smack-the-dummy"
 

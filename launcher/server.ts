@@ -4,11 +4,15 @@
 
 import { gameFiles } from './embed-game.ts' with { type: 'macro' };
 
-const FILES = gameFiles();
+const FILES = Object.fromEntries(
+  Object.entries(gameFiles()).map(([path, base64]) => [path, Buffer.from(base64, 'base64')]),
+);
 const TYPES: Record<string, string> = {
   html: 'text/html; charset=utf-8',
   css: 'text/css; charset=utf-8',
   js: 'text/javascript; charset=utf-8',
+  webmanifest: 'application/manifest+json',
+  png: 'image/png',
 };
 // Browsers keep saves per origin, so a fixed port keeps coins and unlocks between runs.
 const DEFAULT_PORT = 41817;
