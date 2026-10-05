@@ -1,0 +1,72 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; overflow: hidden; background: #1b1b2f;
+  font-family: "Trebuchet MS", system-ui, sans-serif;
+  user-select: none; -webkit-user-select: none; touch-action: none;
+}
+canvas { display: block; }
+#hud {
+  position: fixed; top: 12px; left: 16px; right: 16px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  color: #fff; font-weight: bold; text-shadow: 0 2px 0 #000; pointer-events: none;
+}
+#coins { font-size: 26px; }
+#combo { font-size: 22px; color: #ffd23f; opacity: 0; transition: opacity .15s; text-align: center; }
+#buttons { display: flex; gap: 8px; pointer-events: auto; }
+.btn {
+  width: 44px; height: 44px; border-radius: 12px; border: 3px solid #444;
+  background: #2a2a40; color: #fff; font-size: 20px; cursor: pointer;
+}
+.btn:hover { border-color: #888; }
+.btn:disabled { opacity: .4; cursor: default; border-color: #444; }
+#toolbar {
+  position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; background: rgba(0,0,0,.5); padding: 8px; border-radius: 18px;
+  max-width: calc(100vw - 16px); overflow-x: auto;
+}
+.tool {
+  flex: none; width: 62px; height: 66px; border-radius: 12px; border: 3px solid #444;
+  background: #2a2a40; color: #fff; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.tool span { font-size: 28px; line-height: 1; }
+.tool small { font-size: 11px; font-weight: bold; }
+.tool:hover { border-color: #888; }
+.tool.active { border-color: #ffd23f; background: #45456b; }
+.tool.locked span { filter: grayscale(1) brightness(.6); }
+.tool.locked small { color: #ffd23f; }
+.tool.off { opacity: .35; }
+.tool.nope { animation: nope .3s; }
+@keyframes nope { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+#toast {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,.75); color: #fff; padding: 8px 16px; border-radius: 10px;
+  font-weight: bold; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+#menu {
+  position: fixed; inset: 0; z-index: 10; background: rgba(10,10,25,.72);
+  display: flex; align-items: center; justify-content: center;
+}
+#menu.hidden { display: none; }
+.panel {
+  background: #25253d; border: 3px solid #444; border-radius: 20px; padding: 24px 28px;
+  text-align: center; color: #fff; max-width: 94vw; max-height: 92vh; overflow-y: auto;
+}
+.panel h1 { font-family: Impact, "Arial Black", sans-serif; font-size: 44px; color: #ffd23f; text-shadow: 0 3px 0 #000; }
+.panel p { margin: 6px 0 18px; color: #ccc; }
+#looks { display: flex; gap: 12px; justify-content: center; margin-bottom: 8px; }
+.look {
+  width: 130px; padding: 10px; border-radius: 14px; border: 3px solid #444; background: #2a2a40;
+  color: #fff; cursor: pointer; font: inherit; font-weight: bold;
+}
+.look span { display: block; font-size: 30px; margin-bottom: 4px; }
+.look:hover, .look.current { border-color: #ffd23f; }
+#rooms { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.room {
+  width: 130px; border-radius: 14px; border: 3px solid #444; background: #2a2a40; color: #fff;
+  cursor: pointer; overflow: hidden; padding: 0; font: inherit; transition: transform .1s;
+}
+.room:hover { border-color: #ffd23f; transform: translateY(-3px); }
+.room.current { border-color: #ffd23f; }
+.room canvas { display: block; width: 124px; height: 80px; }
+.room div { padding: 8px; font-weight: bold; }
