@@ -38,6 +38,8 @@ function stepVikings(fy) {
         damage(target, rand(6, 9), 'vikings');
         if (v.weapon === 'sword') sfx.clang(); else { sfx.slap(); sfx.hit(0.7); }
         burst(target.x, target.y, 5, 'star', { speed: 5, life: 30, size: 6 });
+        // Chops are too weak for damage() to pop a word, so the viking shouts its own battle cry
+        addText(v.x, fy - 140 * v.scale, pick(WORDS.vikings), pick(WORD_COLORS), 30, rand(-0.25, 0.25));
       }
     }
     if ((v.dir > 0 && v.x > W + 80) || (v.dir < 0 && v.x < -80)) vikings.splice(i, 1);
