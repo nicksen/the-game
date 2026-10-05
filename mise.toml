@@ -24,6 +24,10 @@ run = [
   "bun build --compile --minify --target=bun-linux-x64 launcher/server.ts --outfile dist/smack-the-dummy-linux-x64",
 ]
 
+[tasks.site]
+description = "Collect the game's files into _site/ for GitHub Pages"
+run = "bun tools/build-site.ts"
+
 [tasks.test]
 description = "Replay a scripted play session and compare it with the recorded baseline"
 depends = ["install"]

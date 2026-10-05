@@ -3,11 +3,12 @@
 import { readFileSync } from 'fs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const PATTERNS = ['index.html', 'style.css', 'js/*.js', 'sw.js', 'manifest.webmanifest', 'icons/*.png'];
+// Every file the game needs at runtime; also what tools/build-site.ts publishes to GitHub Pages
+export const GAME_FILE_PATTERNS = ['index.html', 'style.css', 'js/*.js', 'sw.js', 'manifest.webmanifest', 'icons/*.png'];
 
 export function gameFiles(): Record<string, string> {
   const files: Record<string, string> = {};
-  for (const pattern of PATTERNS) {
+  for (const pattern of GAME_FILE_PATTERNS) {
     for (const path of new Bun.Glob(pattern).scanSync(ROOT)) {
       files['/' + path] = readFileSync(ROOT + path).toString('base64');
     }
