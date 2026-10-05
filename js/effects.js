@@ -1,9 +1,7 @@
 'use strict';
 // Particles and floating comic text
 
-function addText(x, y, text, color, size, rot = 0) {
-  texts.push({ x, y, text, color, size, rot, life: 0, max: 50 });
-}
+// ---------- Particles ----------
 function burst(x, y, n, type, o = {}) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2, s = (o.speed || 5) * rand(0.3, 1.3);
@@ -13,6 +11,29 @@ function burst(x, y, n, type, o = {}) {
       size: (o.size || 6) * rand(0.6, 1.4), rot: Math.random() * 6, vr: rand(-0.15, 0.15),
       color: o.color || pick(['#222', '#eee', '#8b4513']),
     });
+  }
+}
+
+function stepParticles(fy) {
+  const g = phys().g;
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life++; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    switch (p.type) {
+      case 'star': p.vy += 0.25 * g; p.vx *= 0.97; break;
+      case 'feather': p.vy = p.vy * 0.9 + 0.08 * g; p.vx *= 0.95; p.x += Math.sin(p.life * 0.2) * 0.8 * g; break;
+      case 'smoke': p.vx *= 0.95; p.vy = p.vy * 0.95 - 0.05 * g; p.size += 0.4; break;
+      case 'fire': p.vx *= 0.9; p.vy = p.vy * 0.9 - 0.1 * g; break;
+      case 'debris':
+        p.vy += 0.5 * g;
+        if (p.y > fy) { p.y = fy; p.vy *= -0.4; p.vx *= 0.7; }
+        break;
+      case 'drop':
+        p.vy += 0.35 * g;
+        if (p.y > fy) { p.y = fy; p.vy = 0; p.vx *= 0.5; }
+        break;
+    }
+    if (p.life >= p.max) particles.splice(i, 1);
   }
 }
 
@@ -48,6 +69,19 @@ function drawParticles() {
     }
   }
   ctx.globalAlpha = 1;
+}
+
+// ---------- Comic text ----------
+function addText(x, y, text, color, size, rot = 0) {
+  texts.push({ x, y, text, color, size, rot, life: 0, max: 50 });
+}
+
+function stepTexts() {
+  for (let i = texts.length - 1; i >= 0; i--) {
+    const t = texts[i];
+    t.life++; t.y -= 1.2;
+    if (t.life >= t.max) texts.splice(i, 1);
+  }
 }
 
 function drawTexts() {

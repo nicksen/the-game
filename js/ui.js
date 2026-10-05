@@ -1,16 +1,34 @@
 'use strict';
 // HUD, toolbar, menu and input
 
+// ---------- HUD ----------
 const coinsEl = document.getElementById('coins');
 const toastEl = document.getElementById('toast');
-const bar = document.getElementById('toolbar');
 let toastTimer = 0;
 
 function updateHud() { coinsEl.textContent = '🪙 ' + save.coins; }
+
+const comboEl = document.getElementById('combo');
+function updateCombo() {
+  const showCombo = combo >= 3 && performance.now() - lastHit < 1300;
+  comboEl.style.opacity = showCombo ? 1 : 0;
+  if (showCombo) comboEl.textContent = `x${combo} COMBO!`;
+}
+
 function toast(msg) {
   toastEl.textContent = msg; toastEl.style.opacity = 1;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.style.opacity = 0, 1400);
 }
+
+document.getElementById('mute').onclick = e => {
+  muted = !muted;
+  e.currentTarget.textContent = muted ? '🔇' : '🔊';
+};
+document.getElementById('heal').onclick = () => { resetScene(); say(LINES.heal, true); };
+document.getElementById('roomBtn').onclick = openMenu;
+
+// ---------- Toolbar ----------
+const bar = document.getElementById('toolbar');
 
 function renderTools() {
   bar.innerHTML = '';
@@ -25,11 +43,18 @@ function renderTools() {
   });
 }
 
+// Shake a toolbar button to say "no"
+function wiggle(el) {
+  if (!el) return;
+  el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope');
+}
+
+// Selecting a locked tool buys it if you can afford it.
 function selectTool(t, el) {
   ac();
   if (offHere(t)) {
     toast(`No ${t.icon} ${t.name} in the ${currentRoom().name}!`);
-    if (el) { el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); }
+    wiggle(el);
     return;
   }
   if (!save.unlocked.includes(t.id)) {
@@ -38,13 +63,24 @@ function selectTool(t, el) {
       sfx.coin(); toast(`Unlocked ${t.icon} ${t.name}!`);
     } else {
       toast(`Need ${t.price - save.coins} more 🪙 for the ${t.name}`);
-      if (el) { el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); }
+      wiggle(el);
       return;
     }
   }
   tool = t.id;
-  canvas.style.cursor = tool === 'grab' ? 'grab' : 'none';
+  resetCursor();
   renderTools();
+}
+
+// ---------- Pointer and keyboard ----------
+// The other tools draw their own icon as the cursor.
+function resetCursor() { canvas.style.cursor = tool === 'grab' ? 'grab' : 'none'; }
+
+// Smoothed pointer velocity, used for punch direction and throwing.
+function trackPointer() {
+  pointer.vx += ((pointer.x - pointer.lastX) - pointer.vx) * 0.5;
+  pointer.vy += ((pointer.y - pointer.lastY) - pointer.vy) * 0.5;
+  pointer.lastX = pointer.x; pointer.lastY = pointer.y;
 }
 
 canvas.addEventListener('pointerdown', e => {
@@ -56,11 +92,13 @@ canvas.addEventListener('pointerdown', e => {
 });
 canvas.addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; pointer.inside = true; });
 canvas.addEventListener('pointerleave', () => { if (!drag) pointer.inside = false; });
+
+// Letting go throws whatever you were holding.
 window.addEventListener('pointerup', () => {
   if (drag) {
     drag.px = drag.x - pointer.vx; drag.py = drag.y - pointer.vy;
     drag = null;
-    canvas.style.cursor = tool === 'grab' ? 'grab' : 'none';
+    resetCursor();
   }
   if (heldProp) {
     // Heavier furniture flies a little slower
@@ -68,28 +106,28 @@ window.addEventListener('pointerup', () => {
     heldProp.vx = clamp(pointer.vx); heldProp.vy = clamp(pointer.vy);
     heldProp.va = pointer.vx * 0.012 / heldProp.mass;
     heldProp = null;
-    canvas.style.cursor = tool === 'grab' ? 'grab' : 'none';
+    resetCursor();
   }
 });
+
 window.addEventListener('keydown', e => {
-  if (e.key.toLowerCase() === 'a') { ac(); openAirlock(); return; }
-  const t = TOOLS.find(t => t.key === e.key.toLowerCase());
+  if (e.key === 'Escape') { menuEl.classList.add('hidden'); return; }
+  const key = e.key.toLowerCase();
+  if (key === 'a') { ac(); openAirlock(); return; }
+  const t = TOOLS.find(t => t.key === key);
   if (t) selectTool(t, bar.children[TOOLS.indexOf(t)]);
 });
 window.addEventListener('resize', resize);
 
-document.getElementById('mute').onclick = e => {
-  muted = !muted;
-  e.currentTarget.textContent = muted ? '🔇' : '🔊';
-};
-function resetScene() {
-  buildDummy(); buildProps(); heldProp = null; pain = 0; sessionDmg = 0; hurtT = 0; drag = null;
-  bombs.length = 0; pianos.length = 0; projectiles.length = 0; couches.length = 0; vikings.length = 0; zapT = 0;
-  airlock.t = -1; airlock.cooldown = 0; updateAirlockBtn();
-}
-document.getElementById('heal').onclick = () => { resetScene(); say(LINES.heal, true); };
-
+// ---------- Menu ----------
 const menuEl = document.getElementById('menu');
+
+function openMenu() {
+  renderLooks();
+  renderRooms();
+  menuEl.classList.remove('hidden');
+}
+
 function renderLooks() {
   const list = document.getElementById('looks');
   list.innerHTML = '';
@@ -101,8 +139,8 @@ function renderLooks() {
     list.appendChild(b);
   }
 }
-function openMenu() {
-  renderLooks();
+
+function renderRooms() {
   const list = document.getElementById('rooms');
   list.innerHTML = '';
   for (const room of ROOMS) {
@@ -116,8 +154,8 @@ function openMenu() {
     b.onclick = () => chooseRoom(room.id);
     list.appendChild(b);
   }
-  menuEl.classList.remove('hidden');
 }
+
 function chooseRoom(id) {
   ac();
   roomId = save.room = id; persist();
@@ -127,5 +165,3 @@ function chooseRoom(id) {
   renderTools();
   say([`Ooh, the ${currentRoom().name.toLowerCase()}! Please be gentle.`], true);
 }
-document.getElementById('roomBtn').onclick = openMenu;
-window.addEventListener('keydown', e => { if (e.key === 'Escape' && !menuEl.classList.contains('hidden')) menuEl.classList.add('hidden'); });

@@ -71,37 +71,53 @@ function drawDummy() {
   drawHead(c('head'));
 }
 
+// Drawn in head-local coordinates, rotated so "up" points away from the neck.
 function drawHead(col) {
   const h = B.head, n = B.neck, r = h.r, suit = lookId === 'suit';
   const ang = Math.atan2(h.y - n.y, h.x - n.x) + Math.PI / 2;
   ctx.save();
   ctx.translate(h.x, h.y); ctx.rotate(ang);
 
-  const HAIR = '#7a4a2a', HAIR_D = '#4a2c18';
-  if (suit) {
-    // Back of the hair, down to about ear level
-    rr(-r - 4, -r - 4, r * 2 + 8, r + 12, 12);
-    ctx.fillStyle = HAIR; ctx.fill(); ctx.strokeStyle = HAIR_D; ctx.lineWidth = 3; ctx.stroke();
-  }
-
+  if (suit) drawHairBack(r);
   circle(0, 0, r); ctx.fillStyle = col; ctx.fill();
   ctx.strokeStyle = OUT; ctx.lineWidth = suit ? 3 : 5; ctx.stroke();
   if (!suit) marker(16, -15, 7);
+  if (suit) drawHairFront(r);
+  drawBandAids();
 
-  if (suit) {
-    // Top of the hair with side-swept bangs
-    ctx.beginPath();
-    ctx.arc(0, 0, r + 3, Math.PI * 0.97, Math.PI * 2.03);
-    ctx.lineTo(r - 4, 2);
-    ctx.quadraticCurveTo(r - 2, -12, 10, -16);
-    ctx.quadraticCurveTo(-4, -10, -14, -18);
-    ctx.quadraticCurveTo(-r + 2, -10, -r + 3, 2);
-    ctx.closePath();
-    ctx.fillStyle = HAIR; ctx.fill(); ctx.strokeStyle = HAIR_D; ctx.lineWidth = 2.5; ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-6, -r + 2); ctx.quadraticCurveTo(4, -22, 14, -20); ctx.stroke();
-  }
+  ctx.strokeStyle = OUT; ctx.fillStyle = OUT; ctx.lineCap = 'round';
+  const dizzy = isDizzy();
+  if (dizzy) drawDizzyFace();
+  else if (hurtT > 0) drawHurtFace();
+  else drawCalmFace(h, ang);
+  ctx.restore();
 
-  // Band-aids pile up as the session goes on
+  if (dizzy) drawCirclingStars(h);
+}
+
+const HAIR = '#7a4a2a', HAIR_D = '#4a2c18';
+
+// Back of the hair, down to about ear level
+function drawHairBack(r) {
+  rr(-r - 4, -r - 4, r * 2 + 8, r + 12, 12);
+  ctx.fillStyle = HAIR; ctx.fill(); ctx.strokeStyle = HAIR_D; ctx.lineWidth = 3; ctx.stroke();
+}
+
+// Top of the hair with side-swept bangs
+function drawHairFront(r) {
+  ctx.beginPath();
+  ctx.arc(0, 0, r + 3, Math.PI * 0.97, Math.PI * 2.03);
+  ctx.lineTo(r - 4, 2);
+  ctx.quadraticCurveTo(r - 2, -12, 10, -16);
+  ctx.quadraticCurveTo(-4, -10, -14, -18);
+  ctx.quadraticCurveTo(-r + 2, -10, -r + 3, 2);
+  ctx.closePath();
+  ctx.fillStyle = HAIR; ctx.fill(); ctx.strokeStyle = HAIR_D; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-6, -r + 2); ctx.quadraticCurveTo(4, -22, 14, -20); ctx.stroke();
+}
+
+// Band-aids pile up as the session goes on
+function drawBandAids() {
   const aids = [[-14, -15, 0.6], [17, 9, -0.7], [-8, 15, 0.3], [4, -22, -0.2]];
   const count = Math.min(aids.length, Math.floor(sessionDmg / 250));
   for (let i = 0; i < count; i++) {
@@ -113,63 +129,66 @@ function drawHead(col) {
       ctx.restore();
     }
   }
+}
 
-  ctx.strokeStyle = OUT; ctx.fillStyle = OUT; ctx.lineCap = 'round';
-  const dizzy = pain > 70, hurt = hurtT > 0;
-  if (dizzy) {
-    for (const ex of [-10, 10]) {
-      ctx.beginPath();
-      for (let t = 0; t < Math.PI * 4; t += 0.3) {
-        const rad = t * 0.6, a = t + performance.now() / 150;
-        ctx.lineTo(ex + Math.cos(a) * rad, -4 + Math.sin(a) * rad);
-      }
-      ctx.lineWidth = 2; ctx.stroke();
+// Spiral eyes, wobbly mouth and tongue out
+function drawDizzyFace() {
+  for (const ex of [-10, 10]) {
+    ctx.beginPath();
+    for (let t = 0; t < Math.PI * 4; t += 0.3) {
+      const rad = t * 0.6, a = t + performance.now() / 150;
+      ctx.lineTo(ex + Math.cos(a) * rad, -4 + Math.sin(a) * rad);
     }
-    ctx.beginPath(); ctx.lineWidth = 3;
-    for (let x = -10; x <= 10; x += 2) ctx.lineTo(x, 13 + Math.sin(x * 0.8) * 2);
-    ctx.stroke();
-    rr(1, 13, 7, 9, 3.5); ctx.fillStyle = '#ff6b8a'; ctx.fill();
-  } else if (hurt) {
+    ctx.lineWidth = 2; ctx.stroke();
+  }
+  ctx.beginPath(); ctx.lineWidth = 3;
+  for (let x = -10; x <= 10; x += 2) ctx.lineTo(x, 13 + Math.sin(x * 0.8) * 2);
+  ctx.stroke();
+  rr(1, 13, 7, 9, 3.5); ctx.fillStyle = '#ff6b8a'; ctx.fill();
+}
+
+// Squeezed-shut >< eyes and an open, yelling mouth
+function drawHurtFace() {
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(-15, -9); ctx.lineTo(-7, -4); ctx.lineTo(-15, 1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(15, -9); ctx.lineTo(7, -4); ctx.lineTo(15, 1); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, 13, 8, 7, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, 17, 5, 3, 0, 0, Math.PI * 2); ctx.fillStyle = '#ff6b8a'; ctx.fill();
+}
+
+// Smiling, blinking, yawning, and eyes that follow the pointer or wander while idling
+function drawCalmFace(h, ang) {
+  const yawning = idling && idle.action === 'stretch' && idle.t > 20 && idle.t < idle.dur - 20;
+  if (yawning || blinkT > 0) {
     ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(-15, -9); ctx.lineTo(-7, -4); ctx.lineTo(-15, 1); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(15, -9); ctx.lineTo(7, -4); ctx.lineTo(15, 1); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(0, 13, 8, 7, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(0, 17, 5, 3, 0, 0, Math.PI * 2); ctx.fillStyle = '#ff6b8a'; ctx.fill();
+    for (const ex of [-10, 10]) { ctx.beginPath(); ctx.arc(ex, -6, 6, 0.2, Math.PI - 0.2); ctx.stroke(); }
   } else {
-    const yawning = idling && idle.action === 'stretch' && idle.t > 20 && idle.t < idle.dur - 20;
-    if (yawning || blinkT > 0) {
-      ctx.lineWidth = 3;
-      for (const ex of [-10, 10]) { ctx.beginPath(); ctx.arc(ex, -6, 6, 0.2, Math.PI - 0.2); ctx.stroke(); }
-    } else {
-      // Eyes follow the pointer, or wander while idling
-      let ox, oy;
-      if (idling && idle.action === 'look') { ox = Math.sin(idle.t * 0.04) * 3; oy = 0; }
-      else if (idling && idle.action === 'watch') { ox = -2; oy = 2.5; }
-      else {
-        const wx = pointer.x - h.x, wy = pointer.y - h.y;
-        const lx = wx * Math.cos(-ang) - wy * Math.sin(-ang), ly = wx * Math.sin(-ang) + wy * Math.cos(-ang);
-        const lm = Math.hypot(lx, ly) || 1;
-        ox = lx / lm * 3; oy = ly / lm * 3;
-      }
-      for (const ex of [-10, 10]) {
-        circle(ex, -4, 7); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 2; ctx.stroke();
-        circle(ex + ox, -4 + oy, 3.2); ctx.fillStyle = OUT; ctx.fill();
-      }
+    let ox, oy;
+    if (idling && idle.action === 'look') { ox = Math.sin(idle.t * 0.04) * 3; oy = 0; }
+    else if (idling && idle.action === 'watch') { ox = -2; oy = 2.5; }
+    else {
+      const wx = pointer.x - h.x, wy = pointer.y - h.y;
+      const lx = wx * Math.cos(-ang) - wy * Math.sin(-ang), ly = wx * Math.sin(-ang) + wy * Math.cos(-ang);
+      const lm = Math.hypot(lx, ly) || 1;
+      ox = lx / lm * 3; oy = ly / lm * 3;
     }
-    if (yawning) {
-      ctx.beginPath(); ctx.ellipse(0, 12, 6, 9, 0, 0, Math.PI * 2); ctx.fillStyle = OUT; ctx.fill();
-    } else {
-      ctx.beginPath(); ctx.arc(0, 8, 9, 0.2, Math.PI - 0.2); ctx.lineWidth = 3; ctx.stroke();
+    for (const ex of [-10, 10]) {
+      circle(ex, -4, 7); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 2; ctx.stroke();
+      circle(ex + ox, -4 + oy, 3.2); ctx.fillStyle = OUT; ctx.fill();
     }
   }
-  ctx.restore();
+  if (yawning) {
+    ctx.beginPath(); ctx.ellipse(0, 12, 6, 9, 0, 0, Math.PI * 2); ctx.fillStyle = OUT; ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(0, 8, 9, 0.2, Math.PI - 0.2); ctx.lineWidth = 3; ctx.stroke();
+  }
+}
 
-  if (dizzy) {
-    for (let i = 0; i < 3; i++) {
-      const a = performance.now() / 300 + i * Math.PI * 2 / 3;
-      star(h.x + Math.cos(a) * 36, h.y - 30 + Math.sin(a) * 8, 7, a);
-      ctx.fillStyle = '#ffe14d'; ctx.fill(); ctx.strokeStyle = '#a07800'; ctx.lineWidth = 1.5; ctx.stroke();
-    }
+function drawCirclingStars(h) {
+  for (let i = 0; i < 3; i++) {
+    const a = performance.now() / 300 + i * Math.PI * 2 / 3;
+    star(h.x + Math.cos(a) * 36, h.y - 30 + Math.sin(a) * 8, 7, a);
+    ctx.fillStyle = '#ffe14d'; ctx.fill(); ctx.strokeStyle = '#a07800'; ctx.lineWidth = 1.5; ctx.stroke();
   }
 }
 

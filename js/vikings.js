@@ -1,6 +1,21 @@
 'use strict';
 // The viking horde
 
+const HORDE_SIZE = 8, MAX_VIKINGS = 30;
+
+// A horde charges in from the edge nearest the click and runs across the floor
+function spawnVikings() {
+  const dir = pointer.x < W / 2 ? 1 : -1, x0 = dir > 0 ? -60 : W + 60;
+  const n = Math.max(0, Math.min(HORDE_SIZE, MAX_VIKINGS - vikings.length));
+  for (let i = 0, x = x0; i < n; i++, x -= dir * rand(45, 65)) {
+    vikings.push({ x, dir, speed: rand(5, 6.5), phase: rand(0, 6), depth: rand(-6, 10), scale: rand(0.85, 1.05),
+      weapon: pick(['axe', 'sword', 'spear']), tunic: pick(['#8b3a2e', '#3b5f8a', '#4f7a3a', '#7a5a2e']),
+      beard: pick(['#d9772b', '#e8c766', '#6b3f1f', '#b23a1a']), shield: pick(['#c0392b', '#2e6fb5', '#d4a017']),
+      swing: 0, hit: false });
+  }
+  if (n) { sfx.warcry(); say(LINES.vikings, true); }
+}
+
 // Each viking runs along the floor and chops the first body part that comes within reach of its weapon, once.
 let vikingStomp = 0;
 function stepVikings(fy) {

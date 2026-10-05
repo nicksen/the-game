@@ -7,6 +7,7 @@ const AIRLOCK = { warn: 60, open: 200, h: 200, recharge: 600, maxCoins: 150 };
 const airlock = { t: -1, earned: 0, cooldown: 0 };
 const hatchY = () => floorY() - 140;
 
+// How far open the doors are: 0 during the alarm, easing to 1 and back to 0 as it opens and closes
 function airlockOpenness() {
   const t = airlock.t - AIRLOCK.warn;
   if (airlock.t < 0 || t < 0) return 0;
@@ -20,6 +21,7 @@ function openAirlock() {
   updateAirlockBtn();
 }
 
+// Runs the alarm → open → close cycle and counts down the recharge.
 function stepAirlock() {
   if (airlock.cooldown > 0 && --airlock.cooldown % 60 === 0) updateAirlockBtn();
   if (airlock.t < 0) return;
@@ -31,9 +33,11 @@ function stepAirlock() {
     return;
   }
   const o = airlockOpenness();
-  if (!o) return;
+  if (o) suckTowardHatch(o);
+}
 
-  // Suction toward the hatch, a bit stronger up close
+// Suction toward the hatch, a bit stronger up close; `o` is how far open the doors are (0..1).
+function suckTowardHatch(o) {
   const hy = hatchY(), half = AIRLOCK.h / 2 * o;
   const suck = (x, y, s) => {
     const dx = -x, dy = hy - y, d = Math.hypot(dx, dy) || 1;

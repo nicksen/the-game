@@ -1,17 +1,28 @@
 'use strict';
-// Shared game state, dummy dialogue and damage/coin bookkeeping
+// Shared game state, the dummy's dialogue, and damage/coin bookkeeping
 
+// ---------- Input ----------
 let tool = 'punch';
+const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
 let drag = null;
-let pain = 0, hurtT = 0, bodyFlash = 0, shake = 0, flash = 0, swingT = 0, standK = 0;
+
+// ---------- How the dummy is doing ----------
+const DIZZY_PAIN = 70;
+let pain = 0, hurtT = 0, bodyFlash = 0, standK = 0;
 let combo = 0, lastHit = 0, lastIdle = performance.now(), sessionDmg = 0, wasDizzy = false;
-let speech = null;
-let zapT = 0, zapTarget = null;
 let idling = false, blinkT = 0;
 const idle = { action: 'breathe', t: 0, dur: 200 };
-const particles = [], texts = [], bombs = [], pianos = [], projectiles = [], couches = [], vikings = [];
-const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
+let speech = null;
+const isDizzy = () => pain > DIZZY_PAIN;
 
+// ---------- Screen effects ----------
+let shake = 0, flash = 0, swingT = 0;
+
+// ---------- Things in the room ----------
+let zapT = 0, zapTarget = null;
+const particles = [], texts = [], bombs = [], pianos = [], projectiles = [], couches = [], vikings = [];
+
+// ---------- Dialogue ----------
 const LINES = {
   hit: ['Ow!', 'Not the face!', 'Hey!', 'Rude!', 'My spleen!', 'I felt that!', 'Ouchie!',
         'Was that necessary?', "I'm telling HR!", 'Mommy!', 'Ugh!', 'Why me?'],
@@ -36,18 +47,34 @@ const LINES = {
   space: ['Houston, I have a problem.', 'In space, no one can hear me scream.', 'Which way is up?!',
           'I think I left my stomach on Earth.', 'One small smack for man...', 'Wheee... slowly.'],
 };
+
 function say(lines, force = false) {
   if (!force && speech && speech.t < 70) return;
   speech = { text: pick(lines), t: 0 };
 }
 
-const WORDS = { punch: ['POW!', 'BAM!', 'WHAM!', 'SMACK!'], bat: ['WHACK!', 'BONK!', 'CRACK!'],
-  chicken: ['SQUEAK!', 'BAWK!'], impact: ['THUD!', 'SPLAT!', 'CRUNCH!'], bomb: ['KA-BOOM!'], piano: ['CRASH!'],
-  fish: ['SLAP!', 'SPLOSH!'], tomato: ['SPLAT!'], hammer: ['CLANG!', 'BONK!', 'THWACK!'], zap: ['BZZZT!', 'ZAP!'],
-  rocket: ['KA-BOOM!'], meteor: ['KRAKOOM!'], vikings: ['CHOP!', 'HACK!', 'SKÅL!', 'RAAAH!'], couch: ['WHUMP!', 'CRASH!', 'SOFA SLAM!'],
-  furniture: ['CRASH!', 'WHAM!', 'KER-SMASH!'] };
+// Comic sound-effect words popped up on big hits, by damage kind
+const WORDS = {
+  punch: ['POW!', 'BAM!', 'WHAM!', 'SMACK!'],
+  bat: ['WHACK!', 'BONK!', 'CRACK!'],
+  chicken: ['SQUEAK!', 'BAWK!'],
+  impact: ['THUD!', 'SPLAT!', 'CRUNCH!'],
+  bomb: ['KA-BOOM!'],
+  piano: ['CRASH!'],
+  fish: ['SLAP!', 'SPLOSH!'],
+  tomato: ['SPLAT!'],
+  hammer: ['CLANG!', 'BONK!', 'THWACK!'],
+  zap: ['BZZZT!', 'ZAP!'],
+  rocket: ['KA-BOOM!'],
+  meteor: ['KRAKOOM!'],
+  vikings: ['CHOP!', 'HACK!', 'SKÅL!', 'RAAAH!'],
+  couch: ['WHUMP!', 'CRASH!', 'SOFA SLAM!'],
+  furniture: ['CRASH!', 'WHAM!', 'KER-SMASH!'],
+};
 const WORD_COLORS = ['#ff3b3b', '#ffd23f', '#3bd1ff', '#ff7bd5', '#7dff6b'];
 
+// ---------- Damage ----------
+// Hurts the dummy at body point `p`, pays out coins (more during a combo) and reacts.
 function damage(p, amount, kind = 'impact') {
   amount = Math.max(1, Math.round(amount));
   const now = performance.now();
@@ -70,4 +97,19 @@ function damage(p, amount, kind = 'impact') {
   else if (LINES[kind] && Math.random() < 0.5) say(LINES[kind]);
   else if (amount >= 30) say(LINES.big, true);
   else if (Math.random() < 0.35) say(LINES.hit);
+}
+
+// Pain and flashes fade, speech bubbles expire, and the dummy pipes up when dizzy or bored.
+function stepTimers(now) {
+  pain = Math.max(0, pain * 0.996 - 0.25);
+  if (hurtT > 0) hurtT--;
+  bodyFlash *= 0.85; flash *= 0.88; swingT *= 0.8;
+  shake = shake < 0.3 ? 0 : shake * 0.85;
+  if (speech && ++speech.t > 120) speech = null;
+
+  const dizzy = isDizzy();
+  if (dizzy && !wasDizzy) say(LINES.dizzy, true);
+  wasDizzy = dizzy;
+
+  if (now - lastHit > 7000 && now - lastIdle > 7000) { lastIdle = now; say(zeroG() ? LINES.space : LINES.idle); }
 }

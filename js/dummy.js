@@ -121,3 +121,63 @@ function pull(p, tx, ty, k) {
   p.x += dx; p.y += dy;
   p.px += (p.x - p.px) * 0.12;
 }
+
+// Get back up when not too beaten up, idle when left alone, and blink now and then.
+function steerDummy(now, fy) {
+  const dizzy = isDizzy();
+  const canStand = !drag && !dizzy && pain < 35 && now - lastHit > 1500;
+  standK = canStand ? Math.min(1, standK + 0.02) : 0;
+  if (standK > 0 && phys().g) {
+    const footOnFloor = B.lFoot.y > fy - B.lFoot.r - 3 || B.rFoot.y > fy - B.rFoot.r - 3;
+    if (footOnFloor) {
+      const fx = (B.lFoot.x + B.rFoot.x) / 2, fyy = Math.max(B.lFoot.y, B.rFoot.y);
+      pull(B.pelvis, fx, fyy - 70, 0.12 * standK);
+      pull(B.neck, B.pelvis.x, B.pelvis.y - 65, 0.08 * standK);
+      pull(B.head, B.pelvis.x, B.pelvis.y - 105, 0.12 * standK);
+    }
+  }
+
+  idling = standK >= 1 && !drag && !heldProp && zapT <= 0 && airlock.t < 0 && now - lastHit > 3000;
+  if (idling) stepIdle(fy);
+  else { idle.action = 'breathe'; idle.t = 0; idle.dur = 120; }
+  if (blinkT > 0) blinkT--; else if (Math.random() < 0.006) blinkT = 7;
+}
+
+// Verlet integration; a grabbed point just follows the pointer.
+function moveDummy() {
+  const { g, damp } = phys();
+  for (const p of points) {
+    if (p.cd > 0) p.cd--;
+    if (p === drag) {
+      p.px = p.x; p.py = p.y;
+      p.x = pointer.x; p.y = pointer.y;
+      collideBounds(p, false);
+      continue;
+    }
+    let vx = (p.x - p.px) * damp, vy = (p.y - p.py) * damp;
+    const sp = Math.hypot(vx, vy);
+    if (sp > MAXV) { vx *= MAXV / sp; vy *= MAXV / sp; }
+    p.px = p.x; p.py = p.y;
+    p.x += vx; p.y += vy + GRAVITY * g;
+  }
+}
+
+// Hard wall impacts hurt, then the sticks are relaxed to hold the body together.
+function collideDummy(fy) {
+  for (const p of points) {
+    if (p === drag) continue;
+    const imp = collideBounds(p, true);
+    if (imp > 9 && p.cd === 0) {
+      p.cd = 12;
+      const mult = p === B.head ? 1.5 : 1;
+      damage(p, (imp - 7) * 1.3 * mult, 'impact');
+      sfx.hit(imp / 30);
+      burst(p.x, Math.min(p.y + p.r, fy), 4, 'smoke', { speed: 2, life: 30, size: 8 });
+    }
+  }
+
+  for (let i = 0; i < ITER; i++) {
+    for (const s of sticks) solveStick(s);
+    for (const p of points) collideBounds(p, false);
+  }
+}

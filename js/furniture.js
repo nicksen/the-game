@@ -36,6 +36,7 @@ const PROPS = {
 
 let props = [], heldProp = null;
 
+// Specs give a floor position by default; `y`, `vx`, `vy`, `a` and `va` override the resting start.
 function makeProp(spec) {
   const x = Math.max(spec.w / 2, Math.min(W - spec.w / 2, spec.x));
   return { ...spec, x, y: spec.y ?? floorY() - spec.h / 2, vx: spec.vx || 0, vy: spec.vy || 0,
@@ -50,6 +51,7 @@ function propCorners(p) {
     y: p.y + sx * p.w / 2 * s + sy * p.h / 2 * c,
   }));
 }
+// Is (x, y) inside the rotated prop, grown by `pad`?
 function inProp(p, x, y, pad = 0) {
   const c = Math.cos(-p.a), s = Math.sin(-p.a), dx = x - p.x, dy = y - p.y;
   const lx = dx * c - dy * s, ly = dx * s + dy * c;
@@ -57,67 +59,76 @@ function inProp(p, x, y, pad = 0) {
 }
 
 function stepProps(fy) {
-  const { g: G } = phys(), space = G === 0;
+  const g = phys().g, space = g === 0;
   for (const p of props) {
     if (p.cd > 0) p.cd--;
     if (p.landCd > 0) p.landCd--;
-    if (p === heldProp) {
-      const tx = pointer.x + p.gx, ty = pointer.y + p.gy;
-      p.vx = tx - p.x; p.vy = ty - p.y; p.x = tx; p.y = ty;
-      p.a += (Math.max(-0.6, Math.min(0.6, pointer.vx * 0.03)) - p.a) * 0.15;
-      p.va = 0;
-    } else {
-      p.vy += GRAVITY * G; p.vx *= 0.995;
-      p.x += p.vx; p.y += p.vy; p.a += p.va; p.va *= 0.99;
-    }
+    moveProp(p, g);
+    keepPropInRoom(p, fy, space);
+    propHitDummy(p);
+  }
+}
 
-    // Keep inside the room using the rotated corners
-    const cs = propCorners(p);
-    const maxY = Math.max(...cs.map(c => c.y)), minY = Math.min(...cs.map(c => c.y));
-    const minX = Math.min(...cs.map(c => c.x)), maxX = Math.max(...cs.map(c => c.x));
-    if (maxY > fy) {
-      p.y -= maxY - fy;
-      if (p !== heldProp) {
-        if (p.vy > 8 && p.landCd === 0) {
-          p.landCd = 10;
-          if (p.soft) sfx.squeak(); else sfx.thud();
-          shake = Math.max(shake, Math.min(15, p.vy * p.mass * 0.4));
-          burst(p.x, fy - 5, 6, 'smoke', { speed: 2, life: 40, size: 10 });
-        }
-        if (space) {
-          // Nothing holds it down, so it just bounces off the deck
-          p.vy = -Math.abs(p.vy) * 0.7;
-        } else {
-          if (p.vy > 0) p.vy *= -0.25;
-          p.vx *= 0.8; p.va *= 0.6;
-          // Settle onto the nearest flat side
-          const q = Math.round(p.a / (Math.PI / 2)) * (Math.PI / 2);
-          p.a += (q - p.a) * 0.2;
-        }
+// A held prop follows the pointer, tilting with its motion; a free one flies and spins.
+function moveProp(p, g) {
+  if (p === heldProp) {
+    const tx = pointer.x + p.gx, ty = pointer.y + p.gy;
+    p.vx = tx - p.x; p.vy = ty - p.y; p.x = tx; p.y = ty;
+    p.a += (Math.max(-0.6, Math.min(0.6, pointer.vx * 0.03)) - p.a) * 0.15;
+    p.va = 0;
+  } else {
+    p.vy += GRAVITY * g; p.vx *= 0.995;
+    p.x += p.vx; p.y += p.vy; p.a += p.va; p.va *= 0.99;
+  }
+}
+
+// Bounce off the floor, ceiling and walls using the rotated corners.
+function keepPropInRoom(p, fy, space) {
+  const cs = propCorners(p);
+  const maxY = Math.max(...cs.map(c => c.y)), minY = Math.min(...cs.map(c => c.y));
+  const minX = Math.min(...cs.map(c => c.x)), maxX = Math.max(...cs.map(c => c.x));
+  if (maxY > fy) {
+    p.y -= maxY - fy;
+    if (p !== heldProp) {
+      if (p.vy > 8 && p.landCd === 0) {
+        p.landCd = 10;
+        if (p.soft) sfx.squeak(); else sfx.thud();
+        shake = Math.max(shake, Math.min(15, p.vy * p.mass * 0.4));
+        burst(p.x, fy - 5, 6, 'smoke', { speed: 2, life: 40, size: 10 });
       }
-    }
-    const wb = space ? 0.7 : 0.4;
-    if (minY < 0) { p.y -= minY; p.vy = Math.abs(p.vy) * (space ? 0.7 : 0.3); }
-    if (minX < 0) { p.x -= minX; p.vx = Math.abs(p.vx) * wb; }
-    if (maxX > W) { p.x -= maxX - W; p.vx = -Math.abs(p.vx) * wb; }
-
-    // Smack the dummy
-    const speed = Math.hypot(p.vx, p.vy);
-    if (speed > 6 && p.cd === 0) {
-      const hit = points.find(q => inProp(p, q.x, q.y, q.r));
-      if (hit) {
-        p.cd = 15;
-        const k = Math.min(1.3, 0.5 + p.mass * 0.3), s = Math.min(1, 40 / speed);
-        const reach = Math.max(p.w, p.h) / 2 + 60;
-        for (const q of points) {
-          if (Math.hypot(q.x - p.x, q.y - p.y) < reach) { q.px -= p.vx * s * k; q.py -= p.vy * s * k - 3; }
-        }
-        damage(hit, Math.min(120, speed * s * p.mass * 0.9 + 3), 'furniture');
-        if (p.soft) sfx.squeak(); else { sfx.thud(); sfx.hit(1); }
-        if (p !== heldProp) { p.vx *= -0.3; p.vy *= 0.3; p.va += rand(-0.1, 0.1); }
+      if (space) {
+        // Nothing holds it down, so it just bounces off the deck
+        p.vy = -Math.abs(p.vy) * 0.7;
+      } else {
+        if (p.vy > 0) p.vy *= -0.25;
+        p.vx *= 0.8; p.va *= 0.6;
+        // Settle onto the nearest flat side
+        const q = Math.round(p.a / (Math.PI / 2)) * (Math.PI / 2);
+        p.a += (q - p.a) * 0.2;
       }
     }
   }
+  const wb = space ? 0.7 : 0.4;
+  if (minY < 0) { p.y -= minY; p.vy = Math.abs(p.vy) * (space ? 0.7 : 0.3); }
+  if (minX < 0) { p.x -= minX; p.vx = Math.abs(p.vx) * wb; }
+  if (maxX > W) { p.x -= maxX - W; p.vx = -Math.abs(p.vx) * wb; }
+}
+
+// A fast-moving prop smacks the dummy, harder the heavier it is.
+function propHitDummy(p) {
+  const speed = Math.hypot(p.vx, p.vy);
+  if (speed <= 6 || p.cd !== 0) return;
+  const hit = points.find(q => inProp(p, q.x, q.y, q.r));
+  if (!hit) return;
+  p.cd = 15;
+  const k = Math.min(1.3, 0.5 + p.mass * 0.3), s = Math.min(1, 40 / speed);
+  const reach = Math.max(p.w, p.h) / 2 + 60;
+  for (const q of points) {
+    if (Math.hypot(q.x - p.x, q.y - p.y) < reach) { q.px -= p.vx * s * k; q.py -= p.vy * s * k - 3; }
+  }
+  damage(hit, Math.min(120, speed * s * p.mass * 0.9 + 3), 'furniture');
+  if (p.soft) sfx.squeak(); else { sfx.thud(); sfx.hit(1); }
+  if (p !== heldProp) { p.vx *= -0.3; p.vy *= 0.3; p.va += rand(-0.1, 0.1); }
 }
 
 function drawProp(p) {
@@ -126,4 +137,5 @@ function drawProp(p) {
   p.draw(p.w, p.h);
   ctx.restore();
 }
+// Moving props are drawn in front of the dummy
 const propMoving = p => p === heldProp || Math.hypot(p.vx, p.vy) > 2;
