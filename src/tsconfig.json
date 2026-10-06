@@ -9,7 +9,8 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "strict": false,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "noImplicitAny": true
   },
   "include": ["."]
 }

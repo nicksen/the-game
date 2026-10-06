@@ -3,7 +3,7 @@
 import { box, circle, ctx, rr, seg } from './canvas.ts';
 
 // Each draw function works in local coordinates: centered on the prop, floor at y = h / 2.
-export function drawBookshelf(w, h) {
+export function drawBookshelf(w: number, h: number) {
   const L = -w / 2,
     T = -h / 2;
   box(L, T, w, h, '#6b4423', '#3b2412');
@@ -20,7 +20,7 @@ export function drawBookshelf(w, h) {
   }
 }
 
-export function drawLamp(w, h) {
+export function drawLamp(w: number, h: number) {
   const F = h / 2,
     T = -h / 2;
   const glow = ctx.createRadialGradient(0, T + 50, 5, 0, T + 50, 140);
@@ -48,7 +48,7 @@ export function drawLamp(w, h) {
   ctx.stroke();
 }
 
-export function drawPlant(w, h) {
+export function drawPlant(w: number, h: number) {
   const F = h / 2;
   ctx.fillStyle = '#3f8f3f';
   for (const [a, l] of [
@@ -76,7 +76,7 @@ export function drawPlant(w, h) {
   ctx.fill();
 }
 
-export function drawWaterCooler(w, h) {
+export function drawWaterCooler(w: number, h: number) {
   const F = h / 2;
   box(-26, F - 110, 52, 110, '#e8e8e8', '#999');
   box(-6, F - 80, 12, 8, '#3b82f6', null);
@@ -88,7 +88,7 @@ export function drawWaterCooler(w, h) {
   ctx.stroke();
 }
 
-export function drawFilingCabinet(w, h) {
+export function drawFilingCabinet(w: number, h: number) {
   const F = h / 2;
   box(-36, F - 140, 72, 140, '#8a929e', '#4b525c');
   for (let i = 0; i < 3; i++) {
@@ -97,7 +97,7 @@ export function drawFilingCabinet(w, h) {
   }
 }
 
-export function drawDesk(w, h) {
+export function drawDesk(w: number, h: number) {
   const F = h / 2;
   box(-110, F - 92, 220, 14, '#7a5230', '#3f2a17');
   box(-102, F - 78, 10, 78, '#3f2a17', null);
@@ -118,7 +118,7 @@ export function drawDesk(w, h) {
   ctx.stroke();
 }
 
-export function drawFridge(w, h) {
+export function drawFridge(w: number, h: number) {
   const F = h / 2;
   rr(-50, F - 230, 100, 230, 10);
   ctx.fillStyle = '#f4f4f4';
@@ -141,7 +141,7 @@ export function drawFridge(w, h) {
   }
 }
 
-export function drawChair(w, h) {
+export function drawChair(w: number, h: number) {
   const F = h / 2,
     wood = '#9c6b3f',
     dark = '#5a3a1e';
@@ -153,7 +153,7 @@ export function drawChair(w, h) {
   box(14, F - 80, 14, 4, dark, null);
 }
 
-export function drawWorkbench(w, h) {
+export function drawWorkbench(w: number, h: number) {
   const F = h / 2;
   box(-125, F - 100, 250, 16, '#8b5a2b', '#4f3218');
   box(-115, F - 84, 12, 84, '#4f3218', null);
@@ -162,7 +162,7 @@ export function drawWorkbench(w, h) {
   box(60, F - 124, 40, 24, '#3d5a80', '#223', 2);
 }
 
-export function drawTires(w, h) {
+export function drawTires(w: number, h: number) {
   const F = h / 2;
   for (let i = 0; i < 3; i++) {
     const y = F - 18 - i * 30;
@@ -175,7 +175,7 @@ export function drawTires(w, h) {
   }
 }
 
-export function drawToolbox(w, h) {
+export function drawToolbox(w: number, h: number) {
   const F = h / 2;
   rr(-35, F - 34, 70, 34, 5);
   ctx.fillStyle = '#c0392b';
@@ -195,7 +195,7 @@ export function drawToolbox(w, h) {
   box(-5, F - 28, 10, 8, '#ddd', null);
 }
 
-export function drawBed(w, h) {
+export function drawBed(w: number, h: number) {
   const F = h / 2,
     bw = 250;
   rr(-bw / 2 - 10, F - 160, 26, 160, 8);
@@ -221,7 +221,7 @@ export function drawBed(w, h) {
   ctx.stroke();
 }
 
-export function drawNightstand(w, h) {
+export function drawNightstand(w: number, h: number) {
   const F = h / 2;
   box(-32, F - 70, 64, 70, '#8a5a3b', '#3b2412');
   box(-6, F - 45, 12, 5, '#3b2412', null);
@@ -236,12 +236,12 @@ export function drawNightstand(w, h) {
   ctx.fill();
 }
 
-export function drawTeddy(w, h) {
+export function drawTeddy(w: number, h: number) {
   const F = h / 2,
     fur = '#a0703f',
     dark = '#6b4423',
     light = '#d9b38c';
-  const ball = (x, y, r, c, outline = true) => {
+  const ball = (x: number, y: number, r: number, c: string, outline = true) => {
     circle(x, F + y, r);
     ctx.fillStyle = c;
     ctx.fill();
@@ -266,7 +266,7 @@ export function drawTeddy(w, h) {
   ball(5, -52, 2, '#222', false);
 }
 
-export function drawCrate(w, h) {
+export function drawCrate(w: number, h: number) {
   box(-w / 2, -h / 2, w, h, '#8a93a8', '#3d4354');
   ctx.strokeStyle = '#3d4354';
   ctx.lineWidth = 4;
@@ -280,7 +280,7 @@ export function drawCrate(w, h) {
   ctx.fillText('SUPPLIES', 0, 1);
 }
 
-export function drawOxygenTank(w, h) {
+export function drawOxygenTank(w: number, h: number) {
   rr(-w / 2, -h / 2 + 16, w, h - 16, w / 2);
   ctx.fillStyle = '#f0f0f0';
   ctx.fill();
@@ -299,7 +299,7 @@ export function drawOxygenTank(w, h) {
   seg(0, 18, 5, 13);
 }
 
-export function drawHelmet(w) {
+export function drawHelmet(w: number) {
   const r = w / 2;
   circle(0, 0, r);
   ctx.fillStyle = '#f4f4f4';
