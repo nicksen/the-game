@@ -83,7 +83,7 @@ export function buildDummy() {
 }
 
 // Clamp inside the room; with bounce=true also reflect velocity and report impact speed.
-function collideBounds(p, bounce) {
+function collideBounds(p: Point, bounce: boolean) {
   const fy = floorY(),
     { bounce: BNC, friction } = phys();
   let impact = 0;
@@ -124,7 +124,7 @@ function collideBounds(p, bounce) {
   return impact;
 }
 
-function solveStick(s) {
+function solveStick(s: Stick) {
   const { a, b } = s;
   const dx = b.x - a.x,
     dy = b.y - a.y;
@@ -142,7 +142,7 @@ function solveStick(s) {
 
 // Little routines the dummy plays when left alone.
 const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch'];
-function stepIdle(fy) {
+function stepIdle(fy: number) {
   if (++idle.t > idle.dur) {
     // No foot tapping when there's no floor under your feet
     idle.action = pick(IDLE_ACTIONS.filter((a) => a !== idle.action && !(a === 'tap' && zeroG())));
@@ -190,7 +190,7 @@ function stepIdle(fy) {
 }
 
 // Puppet-string force that makes the dummy wobble back onto its feet.
-function pull(p, tx, ty, k) {
+function pull(p: Point, tx: number, ty: number, k: number) {
   let dx = (tx - p.x) * k,
     dy = (ty - p.y) * k;
   const m = Math.hypot(dx, dy),
@@ -205,7 +205,7 @@ function pull(p, tx, ty, k) {
 }
 
 // Get back up when not too beaten up, idle when left alone, and blink now and then.
-export function steerDummy(now, fy) {
+export function steerDummy(now: number, fy: number) {
   const dizzy = isDizzy();
   const canStand = !drag && !dizzy && pain < 35 && now - lastHit > 1500;
   standK = canStand ? Math.min(1, standK + 0.02) : 0;
@@ -259,7 +259,7 @@ export function moveDummy() {
 }
 
 // Hard wall impacts hurt, then the sticks are relaxed to hold the body together.
-export function collideDummy(fy) {
+export function collideDummy(fy: number) {
   for (const p of points) {
     if (p === drag) continue;
     const imp = collideBounds(p, true);

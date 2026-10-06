@@ -3,7 +3,7 @@
 import { W, circle, ctx, drawShadow, floorY, pick, rand, rr, star } from './canvas.ts';
 import { sfx } from './audio.ts';
 import { phys, zeroG } from './physics.ts';
-import { bombs, couches, damage, heldProp, pianos, pointer, projectiles, screenFx } from './state.ts';
+import { bombs, couches, damage, heldProp, pianos, pointer, projectiles, screenFx, type DamageKind } from './state.ts';
 import { addText, burst } from './effects.ts';
 import { B, points, type Point } from './dummy.ts';
 import { props } from './furniture.ts';
@@ -83,7 +83,7 @@ export function drawBombs() {
 }
 
 // Blasts the dummy and furniture away from `b`, and sets off other bombs in range.
-function explode(b, R = 280, F = 42, kind = 'bomb') {
+function explode(b: { x: number; y: number }, R = 280, F = 42, kind: DamageKind = 'bomb') {
   let maxF = 0,
     closest = B.pelvis;
   for (const p of points) {

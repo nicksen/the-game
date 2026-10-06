@@ -44,7 +44,7 @@ interface BurstOptions {
   size?: number;
   color?: string;
 }
-export function burst(x, y, n, type: ParticleKind, o: BurstOptions = {}) {
+export function burst(x: number, y: number, n: number, type: ParticleKind, o: BurstOptions = {}) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2,
       s = (o.speed || 5) * rand(0.3, 1.3);
@@ -64,7 +64,7 @@ export function burst(x, y, n, type: ParticleKind, o: BurstOptions = {}) {
   }
 }
 
-export function stepParticles(fy) {
+export function stepParticles(fy: number) {
   const g = phys().g;
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -178,14 +178,14 @@ export function drawParticles() {
 // ---------- Comic text ----------
 const TEXT_MAX_POP = 1.2;
 
-export function addText(x, y, text, color, size, rot = 0) {
+export function addText(x: number, y: number, text: string, color: string, size: number, rot = 0) {
   texts.push({ x, y, rot, life: 0, max: 50, sprite: textSprite(text, color, size) });
 }
 
 // Outlined text is slow to draw (it can't use the browser's glyph cache), and redrawing every live text each
 // frame stutters on phones. So each text is drawn once into its own canvas, at its biggest pop size and the
 // screen's pixel density, and that image is what gets scaled and rotated every frame.
-function textSprite(text, color, size): TextSprite {
+function textSprite(text: string, color: string, size: number): TextSprite {
   const c = document.createElement('canvas'),
     g = context2d(c);
   const font = `900 ${size}px Impact, "Arial Black", sans-serif`,

@@ -16,13 +16,13 @@ import type { Prop } from './furniture.ts';
 export const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
 export let drag: Point | null = null,
   heldProp: Prop | null = null;
-export function startDrag(p) {
+export function startDrag(p: Point) {
   drag = p;
 }
 export function endDrag() {
   drag = null;
 }
-export function holdProp(pr) {
+export function holdProp(pr: Prop) {
   heldProp = pr;
 }
 export function dropProp() {
@@ -116,7 +116,7 @@ export const LINES = {
   ],
 };
 
-export function say(lines, force = false) {
+export function say(lines: string[], force = false) {
   if (!force && speech && speech.t < 70) return;
   speech = { text: pick(lines), t: 0 };
 }
@@ -140,11 +140,12 @@ export const WORDS = {
   furniture: ['CRASH!', 'WHAM!', 'KER-SMASH!'],
 };
 export type DamageKind = keyof typeof WORDS;
+const hasLines = (kind: string): kind is keyof typeof LINES => kind in LINES;
 export const WORD_COLORS = ['#ff3b3b', '#ffd23f', '#3bd1ff', '#ff7bd5', '#7dff6b'];
 
 // ---------- Damage ----------
 // Hurts the dummy at body point `p`, pays out coins (more during a combo) and reacts.
-export function damage(p, amount, kind = 'impact') {
+export function damage(p: Pick<Point, 'x' | 'y' | 'r'>, amount: number, kind: DamageKind = 'impact') {
   amount = Math.max(1, Math.round(amount));
   const now = performance.now();
   combo = now - lastHit < 1300 ? combo + 1 : 1;
@@ -178,13 +179,13 @@ export function damage(p, amount, kind = 'impact') {
     );
   }
   if (kind === 'chicken') say(LINES.chicken);
-  else if (LINES[kind] && Math.random() < 0.5) say(LINES[kind]);
+  else if (hasLines(kind) && Math.random() < 0.5) say(LINES[kind]);
   else if (amount >= 30) say(LINES.big, true);
   else if (Math.random() < 0.35) say(LINES.hit);
 }
 
 // Pain and flashes fade, speech bubbles expire, and the dummy pipes up when dizzy or bored.
-export function stepTimers(now) {
+export function stepTimers(now: number) {
   pain = Math.max(0, pain * 0.996 - 0.25);
   if (hurtT > 0) hurtT--;
   bodyFlash *= 0.85;
