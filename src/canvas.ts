@@ -19,12 +19,12 @@ export function resize() {
 }
 // Points the drawing globals at another canvas for the length of `draw`
 export function drawingInto(context, width, height, draw) {
-  const saved = [ctx, W, H];
+  const saved = { ctx, W, H };
   ctx = context;
   W = width;
   H = height;
   draw();
-  [ctx, W, H] = saved;
+  ({ ctx, W, H } = saved);
 }
 export const floorY = () => H - 110;
 export const rand = (a, b) => a + Math.random() * (b - a);
