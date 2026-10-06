@@ -5,7 +5,7 @@ import { sfx } from './audio.ts';
 import { zeroG } from './physics.ts';
 import { LINES, damage, holdProp, pointer, say, screenFx, startDrag } from './state.ts';
 import { burst } from './effects.ts';
-import { B, points } from './dummy.ts';
+import { B, points, type Point } from './dummy.ts';
 import { inProp, props } from './furniture.ts';
 import { dropBomb, dropMeteor, dropPiano, fireRocket, throwCouch, throwTomato, zap } from './hazards.ts';
 import { spawnVikings } from './vikings.ts';
@@ -47,7 +47,7 @@ export function useTool() {
 export const offHere = (t) => t.earthOnly && zeroG();
 
 export function nearestPoint(x, y) {
-  let best = null,
+  let best: Point | null = null,
     bd = Infinity;
   for (const p of points) {
     const d = Math.hypot(p.x - x, p.y - y) - p.r;

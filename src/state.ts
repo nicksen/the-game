@@ -9,11 +9,13 @@ import { updateHud } from './ui.ts';
 import type { FloatingText, Particle } from './effects.ts';
 import type { Bomb, Couch, Piano, Projectile } from './hazards.ts';
 import type { Viking } from './vikings.ts';
+import type { Point } from './dummy.ts';
+import type { Prop } from './furniture.ts';
 
 // ---------- Input ----------
 export const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
-export let drag = null,
-  heldProp = null;
+export let drag: Point | null = null,
+  heldProp: Prop | null = null;
 export function startDrag(p) {
   drag = p;
 }
@@ -38,7 +40,7 @@ export let combo = 0,
   sessionDmg = 0,
   wasDizzy = false;
 export const idle = { action: 'breathe', t: 0, dur: 200 };
-export let speech = null;
+export let speech: { text: string; t: number } | null = null;
 export const isDizzy = () => pain > DIZZY_PAIN;
 export function resetDummyCondition() {
   pain = 0;

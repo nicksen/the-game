@@ -5,7 +5,7 @@ import { sfx } from './audio.ts';
 import { phys, zeroG } from './physics.ts';
 import { bombs, couches, damage, heldProp, pianos, pointer, projectiles, screenFx } from './state.ts';
 import { addText, burst } from './effects.ts';
-import { B, points } from './dummy.ts';
+import { B, points, type Point } from './dummy.ts';
 import { props } from './furniture.ts';
 import { nearestPoint } from './tools.ts';
 
@@ -557,7 +557,8 @@ export function drawProjectiles() {
 
 // ---------- Lightning ----------
 export let zapT = 0,
-  zapTarget = null;
+  // A body part, or a spot on the floor when nothing was close enough to hit
+  zapTarget: (Pick<Point, 'x' | 'y' | 'r'> & { fake?: boolean }) | null = null;
 export function stopZap() {
   zapT = 0;
 }

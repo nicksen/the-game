@@ -4,7 +4,7 @@ import { OUT, W, box, chain, circle, ctx, floorY, pick, rand, rr, seg } from './
 import { sfx } from './audio.ts';
 import { LINES, WORDS, WORD_COLORS, damage, pointer, say, vikings } from './state.ts';
 import { addText, burst } from './effects.ts';
-import { points } from './dummy.ts';
+import { points, type Point } from './dummy.ts';
 
 const HORDE_SIZE = 8,
   MAX_VIKINGS = 30;
@@ -62,7 +62,7 @@ export function stepVikings(fy) {
 
     if (!v.hit) {
       const reachX = v.x + v.dir * 30;
-      let target = null,
+      let target: Point | null = null,
         bd = 40;
       for (const p of points) {
         const d = Math.abs(p.x - reachX);
