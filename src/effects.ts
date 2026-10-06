@@ -1,5 +1,6 @@
 // Particles and floating comic text
 
+import { context2d } from './dom.ts';
 import { W, canvas, circle, ctx, mix, pick, rand, seg, star } from './canvas.ts';
 import { phys } from './physics.ts';
 import { particles, texts } from './state.ts';
@@ -156,7 +157,7 @@ export function addText(x, y, text, color, size, rot = 0) {
 // screen's pixel density, and that image is what gets scaled and rotated every frame.
 function textSprite(text, color, size) {
   const c = document.createElement('canvas'),
-    g = c.getContext('2d');
+    g = context2d(c);
   const font = `900 ${size}px Impact, "Arial Black", sans-serif`,
     lw = Math.max(3, size / 7);
   g.font = font;

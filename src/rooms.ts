@@ -1,5 +1,6 @@
 // The rooms you can play in
 
+import { context2d } from './dom.ts';
 import { H, W, ctx, drawingInto, floorY } from './canvas.ts';
 import { save } from './save.ts';
 import {
@@ -115,7 +116,7 @@ export function renderThumb(room, cv) {
   cv.height = th;
   const savedRoomId = roomId;
   roomId = room.id;
-  drawingInto(cv.getContext('2d'), 1000, (1000 * th) / tw, () => {
+  drawingInto(context2d(cv), 1000, (1000 * th) / tw, () => {
     ctx.setTransform(tw / W, 0, 0, tw / W, 0, 0);
     drawRoom();
     for (const spec of PROPS[room.id]()) drawProp(makeProp(spec));
