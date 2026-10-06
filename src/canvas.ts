@@ -71,7 +71,7 @@ export function seg(x1, y1, x2, y2) {
   ctx.stroke();
 }
 // Filled rectangle with an optional outline (pass stroke = null for none)
-export function box(x, y, w, h, fill, stroke = 'rgba(0,0,0,0.45)', lw = 3) {
+export function box(x, y, w, h, fill, stroke: string | null = 'rgba(0,0,0,0.45)', lw = 3) {
   ctx.fillStyle = fill;
   ctx.fillRect(x, y, w, h);
   if (stroke) {

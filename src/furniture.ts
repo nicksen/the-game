@@ -27,7 +27,35 @@ import {
   drawWorkbench,
 } from './furniture-art.ts';
 
-export const PROPS = {
+interface PropSpec {
+  x: number;
+  y?: number;
+  w: number;
+  h: number;
+  mass: number;
+  soft?: boolean;
+  vx?: number;
+  vy?: number;
+  // Angle and angular velocity
+  a?: number;
+  va?: number;
+  draw: (w: number, h: number) => void;
+}
+export interface Prop extends PropSpec {
+  y: number;
+  vx: number;
+  vy: number;
+  a: number;
+  va: number;
+  // Cooldowns so one impact or landing isn't counted every step
+  cd: number;
+  landCd: number;
+  // Offset from the pointer while it's held
+  gx: number;
+  gy: number;
+}
+
+export const PROPS: Record<string, () => PropSpec[]> = {
   living: () => [
     { x: W * 0.72, w: 120, h: 190, mass: 2.2, draw: drawBookshelf },
     { x: W * 0.9, w: 76, h: 232, mass: 0.8, draw: drawLamp },
@@ -60,10 +88,10 @@ export const PROPS = {
   ],
 };
 
-export let props = [];
+export let props: Prop[] = [];
 
 // Specs give a floor position by default; `y`, `vx`, `vy`, `a` and `va` override the resting start.
-export function makeProp(spec) {
+export function makeProp(spec: PropSpec): Prop {
   const x = Math.max(spec.w / 2, Math.min(W - spec.w / 2, spec.x));
   return {
     ...spec,
@@ -75,6 +103,8 @@ export function makeProp(spec) {
     va: spec.va || 0,
     cd: 0,
     landCd: 0,
+    gx: 0,
+    gy: 0,
   };
 }
 export function buildProps() {
