@@ -1,5 +1,6 @@
 // HUD, toolbar, menu and input
 
+import { byId } from './dom.ts';
 import { canvas, resize } from './canvas.ts';
 import { persist, save } from './save.ts';
 import { ac, sfx, toggleMute } from './audio.ts';
@@ -11,15 +12,15 @@ import { TOOLS, offHere, setTool, tool, useTool } from './tools.ts';
 import { resetScene } from './main.ts';
 
 // ---------- HUD ----------
-const coinsEl = document.getElementById('coins');
-const toastEl = document.getElementById('toast');
+const coinsEl = byId('coins', HTMLElement);
+const toastEl = byId('toast', HTMLElement);
 let toastTimer = 0;
 
 export function updateHud() {
   coinsEl.textContent = '🪙 ' + save.coins;
 }
 
-const comboEl = document.getElementById('combo');
+const comboEl = byId('combo', HTMLElement);
 export function updateCombo() {
   const showCombo = combo >= 3 && performance.now() - lastHit < 1300;
   comboEl.style.opacity = showCombo ? 1 : 0;
@@ -33,17 +34,18 @@ function toast(msg) {
   toastTimer = setTimeout(() => (toastEl.style.opacity = 0), 1400);
 }
 
-document.getElementById('mute').onclick = (e) => {
-  e.currentTarget.textContent = toggleMute() ? '🔇' : '🔊';
+const muteBtn = byId('mute', HTMLButtonElement);
+muteBtn.onclick = () => {
+  muteBtn.textContent = toggleMute() ? '🔇' : '🔊';
 };
-document.getElementById('heal').onclick = () => {
+byId('heal', HTMLButtonElement).onclick = () => {
   resetScene();
   say(LINES.heal, true);
 };
-document.getElementById('roomBtn').onclick = openMenu;
+byId('roomBtn', HTMLButtonElement).onclick = openMenu;
 
 // ---------- Toolbar ----------
-const bar = document.getElementById('toolbar');
+const bar = byId('toolbar', HTMLElement);
 
 export function renderTools() {
   bar.innerHTML = '';
@@ -161,7 +163,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('resize', resize);
 
 // ---------- Menu ----------
-const menuEl = document.getElementById('menu');
+const menuEl = byId('menu', HTMLElement);
 
 export function openMenu() {
   renderLooks();
@@ -170,7 +172,7 @@ export function openMenu() {
 }
 
 function renderLooks() {
-  const list = document.getElementById('looks');
+  const list = byId('looks', HTMLElement);
   list.innerHTML = '';
   for (const [id, look] of Object.entries(LOOKS)) {
     const b = document.createElement('button');
@@ -186,7 +188,7 @@ function renderLooks() {
 }
 
 function renderRooms() {
-  const list = document.getElementById('rooms');
+  const list = byId('rooms', HTMLElement);
   list.innerHTML = '';
   for (const room of ROOMS) {
     const b = document.createElement('button');

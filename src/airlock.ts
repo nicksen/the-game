@@ -1,5 +1,6 @@
 // The airlock in zero-g rooms
 
+import { byId } from './dom.ts';
 import { W, box, circle, ctx, floorY, rand } from './canvas.ts';
 import { ac, sfx } from './audio.ts';
 import { zeroG } from './physics.ts';
@@ -121,7 +122,7 @@ function suckTowardHatch(o) {
   screenFx.shake = Math.max(screenFx.shake, 4 * o);
 }
 
-const airlockBtn = document.getElementById('airlockBtn');
+const airlockBtn = byId('airlockBtn', HTMLButtonElement);
 export function updateAirlockBtn() {
   airlockBtn.style.display = zeroG() ? '' : 'none';
   airlockBtn.disabled = airlock.t >= 0 || airlock.cooldown > 0;

@@ -1,6 +1,8 @@
 // Canvas, screen size, random helpers and shared drawing primitives
 
-export const canvas = document.getElementById('game');
+import { byId } from './dom.ts';
+
+export const canvas = byId('game', HTMLCanvasElement);
 export let ctx = canvas.getContext('2d');
 export let W = 0,
   H = 0;
