@@ -27,10 +27,14 @@ const server = process.argv.some((a) => a.startsWith('--url='))
     });
 // A persistent profile: Chrome treats Playwright's default throwaway profiles as incognito, where nothing is installable
 const profile = mkdtempSync(`${tmpdir()}/pwa-test-`);
+const VIEWPORT = { width: 852, height: 393 };
+// Where the dummy's pelvis starts: centred, 80px above a floor that sits 110px up from the bottom
+const DUMMY = { x: VIEWPORT.width / 2, y: VIEWPORT.height - 190 };
+const savedCoins = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('smack-the-dummy-v1')).coins);
 const context = await chromium.launchPersistentContext(profile, {
   channel: 'chrome',
   headless: true,
-  viewport: { width: 852, height: 393 },
+  viewport: VIEWPORT,
   isMobile: true,
   hasTouch: true,
 });
@@ -108,13 +112,12 @@ try {
   check(!reachable, 'the browser is really offline');
   await page.tap('#rooms .room:nth-child(1)');
   await page.waitForTimeout(1000);
-  const before = await page.evaluate(() => save.coins);
+  const before = await savedCoins(page);
   for (let i = 0; i < 3; i++) {
-    const target = await page.evaluate(() => ({ x: B.pelvis.x, y: B.pelvis.y }));
-    await page.touchscreen.tap(target.x, target.y);
+    await page.touchscreen.tap(DUMMY.x, DUMMY.y);
     await page.waitForTimeout(150);
   }
-  const after = await page.evaluate(() => save.coins);
+  const after = await savedCoins(page);
   check(after > before, `offline: the game loads and a few taps earn coins (${before} → ${after})`);
   check(errors.length === 0, `no errors in the page${errors.length ? ': ' + errors.join(' | ') : ''}`);
 } finally {
