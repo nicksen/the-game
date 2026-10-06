@@ -8,44 +8,91 @@ let drag = null;
 
 // ---------- How the dummy is doing ----------
 const DIZZY_PAIN = 70;
-let pain = 0, hurtT = 0, bodyFlash = 0, standK = 0;
-let combo = 0, lastHit = 0, lastIdle = performance.now(), sessionDmg = 0, wasDizzy = false;
-let idling = false, blinkT = 0;
+let pain = 0,
+  hurtT = 0,
+  bodyFlash = 0,
+  standK = 0;
+let combo = 0,
+  lastHit = 0,
+  lastIdle = performance.now(),
+  sessionDmg = 0,
+  wasDizzy = false;
+let idling = false,
+  blinkT = 0;
 const idle = { action: 'breathe', t: 0, dur: 200 };
 let speech = null;
 const isDizzy = () => pain > DIZZY_PAIN;
 
 // ---------- Screen effects ----------
-let shake = 0, flash = 0, swingT = 0;
+let shake = 0,
+  flash = 0,
+  swingT = 0;
 
 // ---------- Things in the room ----------
-let zapT = 0, zapTarget = null;
-const particles = [], texts = [], bombs = [], pianos = [], projectiles = [], couches = [], vikings = [];
+let zapT = 0,
+  zapTarget = null;
+const particles = [],
+  texts = [],
+  bombs = [],
+  pianos = [],
+  projectiles = [],
+  couches = [],
+  vikings = [];
 
 // ---------- Dialogue ----------
 const LINES = {
-  hit: ['Ow!', 'Not the face!', 'Hey!', 'Rude!', 'My spleen!', 'I felt that!', 'Ouchie!',
-        'Was that necessary?', "I'm telling HR!", 'Mommy!', 'Ugh!', 'Why me?'],
+  hit: [
+    'Ow!',
+    'Not the face!',
+    'Hey!',
+    'Rude!',
+    'My spleen!',
+    'I felt that!',
+    'Ouchie!',
+    'Was that necessary?',
+    "I'm telling HR!",
+    'Mommy!',
+    'Ugh!',
+    'Why me?',
+  ],
   big: ['AAAAARGH!', 'WHY?!', 'MY WARRANTY!', 'I SEE MY ANCESTORS', 'OKAY THAT ONE HURT'],
   chicken: ['...a chicken?', 'Bawk?!', 'This is humiliating.', 'Is that... rubber?'],
   grab: ['Put me down!', 'Wheee!', 'Not again!', 'Careful, I bruise easily!'],
-  idle: ["Is that all you've got?", "I'm bored...", 'Hellooo?', "Bet you can't hit me!",
-         '*whistles*', 'Did you forget about me?', 'I could do this all day.'],
+  idle: [
+    "Is that all you've got?",
+    "I'm bored...",
+    'Hellooo?',
+    "Bet you can't hit me!",
+    '*whistles*',
+    'Did you forget about me?',
+    'I could do this all day.',
+  ],
   wave: ['Hi there!', 'Hellooo!', 'Yoo-hoo!'],
   watch: ['Any time now...', 'Tick tock...', 'I have a meeting at three.'],
-  stretch: ['*yaaawn*', 'Ahh, that\'s the spot.'],
+  stretch: ['*yaaawn*', "Ahh, that's the spot."],
   dizzy: ['I see stars...', 'Wh-where am I?', 'Is it Tuesday?', 'Mama, the birds...'],
   heal: ['Good as new!', 'Ready for round two!', 'I feel fantastic!'],
   fish: ['Did you just slap me with a FISH?', 'Smells like low tide.', 'Something smells fishy!'],
-  tomato: ['I\'m a dummy, not a salad!', 'Now I need a shower.', 'Is this ketchup?!'],
+  tomato: ["I'm a dummy, not a salad!", 'Now I need a shower.', 'Is this ketchup?!'],
   zap: ['I can see my bones!', 'Shocking!', 'My circuits!', 'That tickles... A LOT!'],
-  hammer: ['My head is not a nail!', 'Stop hammering me!', 'I\'m shorter now.'],
+  hammer: ['My head is not a nail!', 'Stop hammering me!', "I'm shorter now."],
   furniture: ['Put that back!', 'Watch the furniture!', 'Who decorates like this?!', 'That was an heirloom!'],
   couch: ['Not the furniture!', 'I just wanted to sit down!', 'Who throws a COUCH?!', 'Comfy... but OW!'],
   vikings: ['VIKINGS?!', 'I come in peace!', 'Not the pillaging!', 'Is it Ragnarök already?!', 'Valhalla can wait!'],
-  airlock: ['NOT THE AIRLOCK!', 'Hold the door!', "I'm too young to be space junk!", 'Who pressed the big red button?!'],
-  space: ['Houston, I have a problem.', 'In space, no one can hear me scream.', 'Which way is up?!',
-          'I think I left my stomach on Earth.', 'One small smack for man...', 'Wheee... slowly.'],
+  airlock: [
+    'NOT THE AIRLOCK!',
+    'Hold the door!',
+    "I'm too young to be space junk!",
+    'Who pressed the big red button?!',
+  ],
+  space: [
+    'Houston, I have a problem.',
+    'In space, no one can hear me scream.',
+    'Which way is up?!',
+    'I think I left my stomach on Earth.',
+    'One small smack for man...',
+    'Wheee... slowly.',
+  ],
 };
 
 function say(lines, force = false) {
@@ -82,16 +129,31 @@ function damage(p, amount, kind = 'impact') {
   lastHit = now;
   let earned = Math.max(1, Math.round(amount * 0.5 * (1 + Math.min(combo, 20) * 0.1)));
   // A free airlock blast only pays out so much, or furniture crushing the dummy would print coins
-  if (airlock.t >= 0) { earned = Math.min(earned, AIRLOCK.maxCoins - airlock.earned); airlock.earned += earned; }
-  save.coins += earned; save.total += amount; sessionDmg += amount;
-  persist(); updateHud();
+  if (airlock.t >= 0) {
+    earned = Math.min(earned, AIRLOCK.maxCoins - airlock.earned);
+    airlock.earned += earned;
+  }
+  save.coins += earned;
+  save.total += amount;
+  sessionDmg += amount;
+  persist();
+  updateHud();
 
-  pain += amount; hurtT = 35; bodyFlash = 1;
+  pain += amount;
+  hurtT = 35;
+  bodyFlash = 1;
   shake = Math.min(30, shake + amount * 0.5);
   if (earned > 0) addText(p.x + rand(-10, 10), p.y - p.r - 10, '+' + earned + ' 🪙', '#ffd23f', 18);
   if (amount >= 6) burst(p.x, p.y, Math.min(12, 2 + amount / 4), 'star', { speed: 6, life: 35, size: 7 });
   if (amount >= 10 && Math.random() < 0.7) {
-    addText(p.x + rand(-40, 40), p.y - 50, pick(WORDS[kind] || WORDS.impact), pick(WORD_COLORS), 38 + Math.min(amount, 40) * 0.5, rand(-0.3, 0.3));
+    addText(
+      p.x + rand(-40, 40),
+      p.y - 50,
+      pick(WORDS[kind] || WORDS.impact),
+      pick(WORD_COLORS),
+      38 + Math.min(amount, 40) * 0.5,
+      rand(-0.3, 0.3),
+    );
   }
   if (kind === 'chicken') say(LINES.chicken);
   else if (LINES[kind] && Math.random() < 0.5) say(LINES[kind]);
@@ -103,7 +165,9 @@ function damage(p, amount, kind = 'impact') {
 function stepTimers(now) {
   pain = Math.max(0, pain * 0.996 - 0.25);
   if (hurtT > 0) hurtT--;
-  bodyFlash *= 0.85; flash *= 0.88; swingT *= 0.8;
+  bodyFlash *= 0.85;
+  flash *= 0.88;
+  swingT *= 0.8;
   shake = shake < 0.3 ? 0 : shake * 0.85;
   if (speech && ++speech.t > 120) speech = null;
 
@@ -111,5 +175,8 @@ function stepTimers(now) {
   if (dizzy && !wasDizzy) say(LINES.dizzy, true);
   wasDizzy = dizzy;
 
-  if (now - lastHit > 7000 && now - lastIdle > 7000) { lastIdle = now; say(zeroG() ? LINES.space : LINES.idle); }
+  if (now - lastHit > 7000 && now - lastIdle > 7000) {
+    lastIdle = now;
+    say(zeroG() ? LINES.space : LINES.idle);
+  }
 }

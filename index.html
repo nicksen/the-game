@@ -1,65 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Smack the Dummy</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👊</text></svg>">
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1b1b2f">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Smack!">
-</head>
-<body>
-<canvas id="game"></canvas>
-<div id="hud">
-  <div id="coins">🪙 0</div>
-  <div id="combo"></div>
-  <div id="buttons">
-    <button class="btn" id="mute" title="Toggle sound">🔊</button>
-    <button class="btn" id="heal" title="Heal the dummy">❤️</button>
-    <button class="btn" id="airlockBtn" title="Open the airlock (A)">🚪</button>
-    <button class="btn" id="roomBtn" title="Change room">🏠</button>
-  </div>
-</div>
-<div id="toast"></div>
-<div id="rotateHint">🔄 Turn your phone sideways for more room</div>
-<div id="toolbar"></div>
-<div id="menu">
-  <div class="panel">
-    <h1>Smack the Dummy</h1>
-    <p>Pick a look</p>
-    <div id="looks"></div>
-    <p>Pick a room to start in</p>
-    <div id="rooms"></div>
-  </div>
-</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>Smack the Dummy</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👊</text></svg>"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#1b1b2f" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Smack!" />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="hud">
+      <div id="coins">🪙 0</div>
+      <div id="combo"></div>
+      <div id="buttons">
+        <button class="btn" id="mute" title="Toggle sound">🔊</button>
+        <button class="btn" id="heal" title="Heal the dummy">❤️</button>
+        <button class="btn" id="airlockBtn" title="Open the airlock (A)">🚪</button>
+        <button class="btn" id="roomBtn" title="Change room">🏠</button>
+      </div>
+    </div>
+    <div id="toast"></div>
+    <div id="rotateHint">🔄 Turn your phone sideways for more room</div>
+    <div id="toolbar"></div>
+    <div id="menu">
+      <div class="panel">
+        <h1>Smack the Dummy</h1>
+        <p>Pick a look</p>
+        <div id="looks"></div>
+        <p>Pick a room to start in</p>
+        <div id="rooms"></div>
+      </div>
+    </div>
 
-<!-- Plain scripts sharing one global scope, so order matters: code that runs while a file loads
+    <!-- Plain scripts sharing one global scope, so order matters: code that runs while a file loads
      (top-level constants, tables like TOOLS and ROOMS) can only use names from files listed above it. -->
-<script src="js/canvas.js"></script>
-<script src="js/save.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/physics.js"></script>
-<script src="js/state.js"></script>
-<script src="js/effects.js"></script>
-<script src="js/dummy.js"></script>
-<script src="js/dummy-art.js"></script>
-<script src="js/room-art.js"></script>
-<script src="js/rooms.js"></script>
-<script src="js/furniture-art.js"></script>
-<script src="js/furniture.js"></script>
-<script src="js/hazards.js"></script>
-<script src="js/vikings.js"></script>
-<script src="js/airlock.js"></script>
-<script src="js/tools.js"></script>
-<script src="js/render.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/main.js"></script>
-<script src="js/pwa.js"></script>
-</body>
+    <script src="js/canvas.js"></script>
+    <script src="js/save.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/physics.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/dummy.js"></script>
+    <script src="js/dummy-art.js"></script>
+    <script src="js/room-art.js"></script>
+    <script src="js/rooms.js"></script>
+    <script src="js/furniture-art.js"></script>
+    <script src="js/furniture.js"></script>
+    <script src="js/hazards.js"></script>
+    <script src="js/vikings.js"></script>
+    <script src="js/airlock.js"></script>
+    <script src="js/tools.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/pwa.js"></script>
+  </body>
 </html>

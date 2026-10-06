@@ -8,7 +8,14 @@ const TOOLS = [
   { id: 'fish', icon: '🐟', name: 'Fish', price: 40, key: '4', use: () => strike(40, 14, 5, 'fish') },
   { id: 'tomato', icon: '🍅', name: 'Tomato', price: 75, key: '5', use: throwTomato },
   { id: 'bat', icon: '🏏', name: 'Bat', price: 100, key: '6', use: () => strike(50, 32, 16, 'bat') },
-  { id: 'hammer', icon: '🔨', name: 'Hammer', price: 150, key: '7', use: () => strike(50, 30, 20, 'hammer', [rand(-0.2, 0.2), 1]) },
+  {
+    id: 'hammer',
+    icon: '🔨',
+    name: 'Hammer',
+    price: 150,
+    key: '7',
+    use: () => strike(50, 30, 20, 'hammer', [rand(-0.2, 0.2), 1]),
+  },
   { id: 'bomb', icon: '💣', name: 'Bomb', price: 250, key: '8', use: dropBomb },
   { id: 'zap', icon: '⚡', name: 'Zap', price: 350, key: '9', use: zap },
   { id: 'piano', icon: '🎹', name: 'Piano', price: 500, key: '0', use: dropPiano },
@@ -20,17 +27,21 @@ const TOOLS = [
 
 function useTool() {
   swingT = 1;
-  TOOLS.find(t => t.id === tool).use();
+  TOOLS.find((t) => t.id === tool).use();
 }
 
 // Some tools make no sense without gravity
-const offHere = t => t.earthOnly && zeroG();
+const offHere = (t) => t.earthOnly && zeroG();
 
 function nearestPoint(x, y) {
-  let best = null, bd = Infinity;
+  let best = null,
+    bd = Infinity;
   for (const p of points) {
     const d = Math.hypot(p.x - x, p.y - y) - p.r;
-    if (d < bd) { bd = d; best = p; }
+    if (d < bd) {
+      bd = d;
+      best = p;
+    }
   }
   return { p: best, d: bd };
 }
@@ -43,9 +54,11 @@ function grab() {
     canvas.style.cursor = 'grabbing';
     if (Math.random() < 0.5) say(LINES.grab);
   } else {
-    const pr = [...props].reverse().find(o => inProp(o, pointer.x, pointer.y, 6));
+    const pr = [...props].reverse().find((o) => inProp(o, pointer.x, pointer.y, 6));
     if (pr) {
-      heldProp = pr; pr.gx = pr.x - pointer.x; pr.gy = pr.y - pointer.y;
+      heldProp = pr;
+      pr.gx = pr.x - pointer.x;
+      pr.gy = pr.y - pointer.y;
       canvas.style.cursor = 'grabbing';
     }
   }
@@ -54,22 +67,37 @@ function grab() {
 // Hit the body part nearest the pointer, knocking it along `dir` (or away from the pointer).
 function strike(reach, force, dmg, kind, dir = null) {
   const { p, d } = nearestPoint(pointer.x, pointer.y);
-  if (!p || d > reach) { sfx.swoosh(); return; }
+  if (!p || d > reach) {
+    sfx.swoosh();
+    return;
+  }
   let dx, dy, m;
   if (dir) {
     [dx, dy] = dir;
   } else {
-    const cx = (B.neck.x + B.pelvis.x) / 2, cy = (B.neck.y + B.pelvis.y) / 2;
-    dx = (p.x - pointer.x) + (cx - pointer.x) * 0.5 + pointer.vx * 2;
-    dy = (p.y - pointer.y) + (cy - pointer.y) * 0.5 + pointer.vy * 2;
+    const cx = (B.neck.x + B.pelvis.x) / 2,
+      cy = (B.neck.y + B.pelvis.y) / 2;
+    dx = p.x - pointer.x + (cx - pointer.x) * 0.5 + pointer.vx * 2;
+    dy = p.y - pointer.y + (cy - pointer.y) * 0.5 + pointer.vy * 2;
     m = Math.hypot(dx, dy);
-    if (m < 4) { dx = Math.random() < 0.5 ? -1 : 1; dy = 0; m = 1; }
-    dx /= m; dy = dy / m - 0.35;
+    if (m < 4) {
+      dx = Math.random() < 0.5 ? -1 : 1;
+      dy = 0;
+      m = 1;
+    }
+    dx /= m;
+    dy = dy / m - 0.35;
   }
-  m = Math.hypot(dx, dy); dx /= m; dy /= m;
+  m = Math.hypot(dx, dy);
+  dx /= m;
+  dy /= m;
 
-  for (const q of points) { q.px -= dx * force * 0.3; q.py -= dy * force * 0.3; }
-  p.px -= dx * force; p.py -= dy * force;
+  for (const q of points) {
+    q.px -= dx * force * 0.3;
+    q.py -= dy * force * 0.3;
+  }
+  p.px -= dx * force;
+  p.py -= dy * force;
 
   const mult = p === B.head ? 1.5 : 1;
   damage(p, dmg * mult * rand(0.8, 1.2), kind);

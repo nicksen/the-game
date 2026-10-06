@@ -11,57 +11,99 @@ import { tmpdir } from 'os';
 
 const ROOT = new URL('..', import.meta.url);
 const PORT = 41898;
-const URL_ = process.argv.find(a => a.startsWith('--url='))?.slice('--url='.length) ?? `http://127.0.0.1:${PORT}/`;
+const URL_ = process.argv.find((a) => a.startsWith('--url='))?.slice('--url='.length) ?? `http://127.0.0.1:${PORT}/`;
 const BASE = new URL(URL_).pathname;
 const failures = [];
-const check = (ok, what) => { console.log(`${ok ? '✓' : '✗'} ${what}`); if (!ok) failures.push(what); };
+const check = (ok, what) => {
+  console.log(`${ok ? '✓' : '✗'} ${what}`);
+  if (!ok) failures.push(what);
+};
 
-const server = process.argv.some(a => a.startsWith('--url=')) ? null
-  : Bun.spawn(['bun', fileURLToPath(new URL('launcher/server.ts', ROOT)), `--port=${PORT}`, '--no-open'],
-    { stdout: 'ignore', stderr: 'inherit' });
+const server = process.argv.some((a) => a.startsWith('--url='))
+  ? null
+  : Bun.spawn(['bun', fileURLToPath(new URL('launcher/server.ts', ROOT)), `--port=${PORT}`, '--no-open'], {
+      stdout: 'ignore',
+      stderr: 'inherit',
+    });
 // A persistent profile: Chrome treats Playwright's default throwaway profiles as incognito, where nothing is installable
 const profile = mkdtempSync(`${tmpdir()}/pwa-test-`);
 const context = await chromium.launchPersistentContext(profile, {
-  channel: 'chrome', headless: true, viewport: { width: 852, height: 393 }, isMobile: true, hasTouch: true,
+  channel: 'chrome',
+  headless: true,
+  viewport: { width: 852, height: 393 },
+  isMobile: true,
+  hasTouch: true,
 });
 try {
-  for (let i = 0; !(await fetch(URL_).then(r => r.ok, () => false)); i++) {
+  for (
+    let i = 0;
+    !(await fetch(URL_).then(
+      (r) => r.ok,
+      () => false,
+    ));
+    i++
+  ) {
     if (i === 50) throw new Error(`The launcher didn't start serving on ${URL_}`);
     await Bun.sleep(100);
   }
-  const page = context.pages()[0] ?? await context.newPage();
+  const page = context.pages()[0] ?? (await context.newPage());
   const errors = [];
-  page.on('pageerror', e => errors.push(e.message));
-  page.on('console', m => m.type() === 'error' && errors.push(m.text()));
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
   await page.goto(URL_);
   await page.evaluate(() => navigator.serviceWorker.ready);
 
   const cdp = await context.newCDPSession(page);
   const { installabilityErrors } = await cdp.send('Page.getInstallabilityErrors');
-  check(installabilityErrors.length === 0,
-    `Chrome considers the app installable${installabilityErrors.length ? ': ' + JSON.stringify(installabilityErrors) : ''}`);
+  check(
+    installabilityErrors.length === 0,
+    `Chrome considers the app installable${installabilityErrors.length ? ': ' + JSON.stringify(installabilityErrors) : ''}`,
+  );
   const manifest = await cdp.send('Page.getAppManifest');
-  check(manifest.errors.length === 0, `manifest has no errors${manifest.errors.length ? ': ' + JSON.stringify(manifest.errors) : ''}`);
+  check(
+    manifest.errors.length === 0,
+    `manifest has no errors${manifest.errors.length ? ': ' + JSON.stringify(manifest.errors) : ''}`,
+  );
 
   const cached = await page.evaluate(async () => {
     const keys = await (await caches.open('smack-the-dummy')).keys();
-    return keys.map(r => new URL(r.url).pathname);
+    return keys.map((r) => new URL(r.url).pathname);
   });
-  const scripts = await page.evaluate(() => [...document.scripts].map(s => new URL(s.src).pathname));
-  const needed = [...['', 'style.css', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
-    'icons/apple-touch-icon.png'].map(p => BASE + p), ...scripts];
-  const missing = needed.filter(p => !cached.includes(p));
-  check(missing.length === 0, `service worker cached all ${needed.length} files${missing.length ? ', missing: ' + missing : ''}`);
+  const scripts = await page.evaluate(() => [...document.scripts].map((s) => new URL(s.src).pathname));
+  const needed = [
+    ...[
+      '',
+      'style.css',
+      'manifest.webmanifest',
+      'icons/icon-192.png',
+      'icons/icon-512.png',
+      'icons/apple-touch-icon.png',
+    ].map((p) => BASE + p),
+    ...scripts,
+  ];
+  const missing = needed.filter((p) => !cached.includes(p));
+  check(
+    missing.length === 0,
+    `service worker cached all ${needed.length} files${missing.length ? ', missing: ' + missing : ''}`,
+  );
 
   // Offline for real: no network for the browser, and a local server is gone too
-  if (server) { server.kill(); await server.exited; }
+  if (server) {
+    server.kill();
+    await server.exited;
+  }
   await context.setOffline(true);
   await page.reload();
   // An outside request (which the service worker doesn't handle) shows whether we're really offline. It runs in
   // its own tab so its expected network error isn't counted as a game error.
   const probe = await context.newPage();
-  const reachable = await probe.evaluate(() => fetch('https://example.com/', { mode: 'no-cors' }).then(() => true, () => false));
+  const reachable = await probe.evaluate(() =>
+    fetch('https://example.com/', { mode: 'no-cors' }).then(
+      () => true,
+      () => false,
+    ),
+  );
   await probe.close();
   check(!reachable, 'the browser is really offline');
   await page.tap('#rooms .room:nth-child(1)');
@@ -69,7 +111,8 @@ try {
   const before = await page.evaluate(() => save.coins);
   for (let i = 0; i < 3; i++) {
     const target = await page.evaluate(() => ({ x: B.pelvis.x, y: B.pelvis.y }));
-    await page.touchscreen.tap(target.x, target.y); await page.waitForTimeout(150);
+    await page.touchscreen.tap(target.x, target.y);
+    await page.waitForTimeout(150);
   }
   const after = await page.evaluate(() => save.coins);
   check(after > before, `offline: the game loads and a few taps earn coins (${before} → ${after})`);

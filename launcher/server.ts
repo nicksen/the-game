@@ -18,15 +18,18 @@ const TYPES: Record<string, string> = {
 const DEFAULT_PORT = 41817;
 const APP_HEADER = 'x-smack-the-dummy';
 
-const arg = (name: string) => process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1];
+const arg = (name: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[1];
 const port = Number(arg('port') ?? DEFAULT_PORT);
 const url = `http://127.0.0.1:${port}/`;
 
 function openBrowser() {
   if (process.argv.includes('--no-open')) return;
-  const cmd = process.platform === 'darwin' ? ['open', url]
-    : process.platform === 'win32' ? ['cmd', '/c', 'start', '', url]
-    : ['xdg-open', url];
+  const cmd =
+    process.platform === 'darwin'
+      ? ['open', url]
+      : process.platform === 'win32'
+        ? ['cmd', '/c', 'start', '', url]
+        : ['xdg-open', url];
   try {
     Bun.spawn(cmd, { stdout: 'ignore', stderr: 'ignore' });
   } catch {
@@ -55,7 +58,10 @@ try {
 } catch (e: any) {
   if (e?.code !== 'EADDRINUSE') throw e;
   // Probably the game is already running; if so just open another tab of it
-  const running = await fetch(url).then(r => r.headers.has(APP_HEADER), () => false);
+  const running = await fetch(url).then(
+    (r) => r.headers.has(APP_HEADER),
+    () => false,
+  );
   if (!running) {
     console.error(`Port ${port} is used by another program. Try: smack-the-dummy --port=${port + 1}`);
     process.exit(1);

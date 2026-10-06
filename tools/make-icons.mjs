@@ -19,49 +19,80 @@ function draw(size) {
   ctx.scale(size / 100, size / 100);
 
   const bg = ctx.createRadialGradient(50, 42, 5, 50, 50, 75);
-  bg.addColorStop(0, '#45456b'); bg.addColorStop(1, '#1b1b2f');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, 100, 100);
+  bg.addColorStop(0, '#45456b');
+  bg.addColorStop(1, '#1b1b2f');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 100, 100);
 
   // Jagged comic "POW" burst: red outside, yellow inside
   const burst = (scale, fill) => {
     ctx.beginPath();
     for (let i = 0; i < 22; i++) {
-      const a = i * Math.PI / 11 - 0.3, r = (i % 2 ? 26 : 34 + (i % 4 === 0 ? 6 : 0)) * scale;
+      const a = (i * Math.PI) / 11 - 0.3,
+        r = (i % 2 ? 26 : 34 + (i % 4 === 0 ? 6 : 0)) * scale;
       ctx.lineTo(50 + Math.cos(a) * r, 50 + Math.sin(a) * r);
     }
     ctx.closePath();
-    ctx.fillStyle = fill; ctx.fill();
-    ctx.lineJoin = 'round'; ctx.lineWidth = 2.5; ctx.strokeStyle = '#1d1d1d'; ctx.stroke();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#1d1d1d';
+    ctx.stroke();
   };
   burst(1, '#e8322a');
   burst(0.8, '#ffd23f');
 
   // Head
-  ctx.beginPath(); ctx.arc(50, 52, 23, 0, Math.PI * 2);
-  ctx.fillStyle = '#f5c400'; ctx.fill(); ctx.lineWidth = 3.5; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(50, 52, 23, 0, Math.PI * 2);
+  ctx.fillStyle = '#f5c400';
+  ctx.fill();
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
 
   // Crash-test marker
-  const mx = 62, my = 39, mr = 6;
-  ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fillStyle = '#ffe14d'; ctx.fill();
+  const mx = 62,
+    my = 39,
+    mr = 6;
+  ctx.beginPath();
+  ctx.arc(mx, my, mr, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffe14d';
+  ctx.fill();
   ctx.fillStyle = '#1d1d1d';
   for (const start of [0, Math.PI]) {
-    ctx.beginPath(); ctx.moveTo(mx, my); ctx.arc(mx, my, mr, start, start + Math.PI / 2); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(mx, my);
+    ctx.arc(mx, my, mr, start, start + Math.PI / 2);
+    ctx.closePath();
+    ctx.fill();
   }
-  ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(mx, my, mr, 0, Math.PI * 2);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 
   // Band-aid
-  ctx.save(); ctx.translate(37, 37);
+  ctx.save();
+  ctx.translate(37, 37);
   for (const rot of [0.6, 0.6 + Math.PI / 2]) {
-    ctx.save(); ctx.rotate(rot);
-    ctx.beginPath(); ctx.roundRect(-9, -3, 18, 6, 3);
-    ctx.fillStyle = '#f2c9a0'; ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = '#b5835a'; ctx.stroke();
+    ctx.save();
+    ctx.rotate(rot);
+    ctx.beginPath();
+    ctx.roundRect(-9, -3, 18, 6, 3);
+    ctx.fillStyle = '#f2c9a0';
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = '#b5835a';
+    ctx.stroke();
     ctx.restore();
   }
   ctx.restore();
   ctx.strokeStyle = '#1d1d1d';
 
   // Dazed spiral eyes and a wobbly mouth
-  ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
   for (const ex of [41, 57]) {
     ctx.beginPath();
     for (let t = 0; t < Math.PI * 4; t += 0.2) {
@@ -70,7 +101,8 @@ function draw(size) {
     }
     ctx.stroke();
   }
-  ctx.beginPath(); ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.lineWidth = 2.4;
   for (let x = 40; x <= 60; x += 1) ctx.lineTo(x, 64 + Math.sin(x * 0.9) * 1.6);
   ctx.stroke();
 
