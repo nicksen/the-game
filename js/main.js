@@ -53,7 +53,7 @@ function resetScene() {
   projectiles.length = 0;
   couches.length = 0;
   vikings.length = 0;
-  zapT = 0;
+  stopZap();
   airlock.t = -1;
   airlock.cooldown = 0;
   updateAirlockBtn();

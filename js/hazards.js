@@ -504,6 +504,12 @@ function drawProjectiles() {
 }
 
 // ---------- Lightning ----------
+let zapT = 0,
+  zapTarget = null;
+function stopZap() {
+  zapT = 0;
+}
+
 // Electrocutes the body part near the pointer, or just strikes the floor if nothing is close.
 function zap() {
   const { p, d } = nearestPoint(pointer.x, pointer.y);

@@ -43,8 +43,6 @@ let shake = 0,
   swingT = 0;
 
 // ---------- Things in the room ----------
-let zapT = 0,
-  zapTarget = null;
 const particles = [],
   texts = [],
   bombs = [],
