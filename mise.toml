@@ -57,6 +57,11 @@ description = "Check the code is formatted with prettier"
 depends = ["install"]
 run = "bunx prettier --check ."
 
+[tasks.typecheck]
+description = "Check the TypeScript types"
+depends = ["install"]
+run = "bunx tsc --noEmit"
+
 [tasks.test]
 description = "Replay a scripted play session and compare it with the recorded baseline"
 depends = ["install", "bundle"]
