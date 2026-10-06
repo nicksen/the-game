@@ -1,7 +1,24 @@
-'use strict';
 // The rooms you can play in
 
-const ROOMS = [
+import { H, W, ctx, drawingInto, floorY } from './canvas.js';
+import { save } from './save.js';
+import {
+  decorBedroom,
+  decorGarage,
+  decorKitchen,
+  decorLiving,
+  decorOffice,
+  decorSpace,
+  drawFloorPattern,
+  drawWallPattern,
+  garageFloor,
+  rugBedroom,
+  rugLiving,
+  spaceFloor,
+} from './room-art.js';
+import { PROPS, drawProp, makeProp } from './furniture.js';
+
+export const ROOMS = [
   {
     id: 'living',
     name: 'Living Room',
@@ -62,13 +79,13 @@ const ROOMS = [
     floorDecor: spaceFloor,
   },
 ];
-let roomId = ROOMS.some((r) => r.id === save.room) ? save.room : 'living';
-const currentRoom = () => ROOMS.find((r) => r.id === roomId);
-function enterRoom(id) {
+export let roomId = ROOMS.some((r) => r.id === save.room) ? save.room : 'living';
+export const currentRoom = () => ROOMS.find((r) => r.id === roomId);
+export function enterRoom(id) {
   roomId = save.room = id;
 }
 
-function drawRoom() {
+export function drawRoom() {
   const fy = floorY(),
     room = currentRoom();
   const g = ctx.createLinearGradient(0, 0, 0, fy);
@@ -91,7 +108,7 @@ function drawRoom() {
 }
 
 // Render a room preview into a small canvas
-function renderThumb(room, cv) {
+export function renderThumb(room, cv) {
   const tw = 248,
     th = 160;
   cv.width = tw;

@@ -1,7 +1,9 @@
-'use strict';
 // Wall and floor patterns and the decor painted in each room
 
-function drawWallPattern(type, fy) {
+import { H, W, box, circle, ctx, rr, seg, star } from './canvas.js';
+import { drawHatch } from './airlock.js';
+
+export function drawWallPattern(type, fy) {
   ctx.save();
   if (type === 'stripes') {
     ctx.fillStyle = 'rgba(255,255,255,0.05)';
@@ -40,7 +42,7 @@ function drawWallPattern(type, fy) {
   ctx.restore();
 }
 
-function drawFloorPattern(type, fy) {
+export function drawFloorPattern(type, fy) {
   ctx.save();
   if (type === 'planks') {
     ctx.strokeStyle = 'rgba(0,0,0,0.18)';
@@ -97,7 +99,7 @@ function windowFrame(x, y, w, h, sky) {
   seg(x - w / 2, y + h / 2, x + w / 2, y + h / 2);
 }
 
-function decorLiving(fy) {
+export function decorLiving(fy) {
   // Window with curtains
   const wx = W * 0.16,
     wy = fy * 0.16,
@@ -148,7 +150,7 @@ function decorLiving(fy) {
   ctx.fill();
 }
 
-function rugLiving(fy) {
+export function rugLiving(fy) {
   ctx.fillStyle = '#9c2f3f';
   ctx.beginPath();
   ctx.ellipse(W / 2, fy + 38, 280, 30, 0, 0, Math.PI * 2);
@@ -160,7 +162,7 @@ function rugLiving(fy) {
   ctx.stroke();
 }
 
-function decorOffice(fy) {
+export function decorOffice(fy) {
   // Window with blinds
   const wx = W * 0.2,
     wy = fy * 0.14,
@@ -206,7 +208,7 @@ function decorOffice(fy) {
   ctx.fillText('NO GAIN', px, py + 12);
 }
 
-function decorKitchen(fy) {
+export function decorKitchen(fy) {
   // Window above the sink
   const sx = W * 0.74;
   const sky = ctx.createLinearGradient(0, fy - 330, 0, fy - 210);
@@ -249,7 +251,7 @@ function decorKitchen(fy) {
   box(tx + 6, fy - 140, 10, 5, '#333', null);
 }
 
-function decorGarage(fy) {
+export function decorGarage(fy) {
   // Roll-up door
   const dw = Math.min(W * 0.32, 380),
     dtop = fy - 300;
@@ -307,7 +309,7 @@ function decorGarage(fy) {
   box(px + 4, py + 26, 18, 30, '#c0392b', null);
 }
 
-function garageFloor(fy) {
+export function garageFloor(fy) {
   ctx.fillStyle = 'rgba(20,20,30,0.35)';
   ctx.beginPath();
   ctx.ellipse(W * 0.36, fy + 45, 70, 14, 0.1, 0, Math.PI * 2);
@@ -316,7 +318,7 @@ function garageFloor(fy) {
   for (let x = 0; x < W; x += 90) ctx.fillRect(x, fy + 70, 50, 6);
 }
 
-function decorBedroom(fy) {
+export function decorBedroom(fy) {
   // Night window with moon and stars
   const wx = W * 0.2,
     wy = fy * 0.16,
@@ -358,7 +360,7 @@ function decorBedroom(fy) {
   ctx.fill();
 }
 
-function rugBedroom(fy) {
+export function rugBedroom(fy) {
   ctx.fillStyle = '#f2d4e0';
   ctx.beginPath();
   ctx.ellipse(W / 2, fy + 38, 220, 28, 0, 0, Math.PI * 2);
@@ -372,7 +374,7 @@ function rugBedroom(fy) {
   ctx.setLineDash([]);
 }
 
-function decorSpace(fy) {
+export function decorSpace(fy) {
   // Ringed planet
   const px = W * 0.78,
     py = fy * 0.36,
@@ -440,7 +442,7 @@ function decorSpace(fy) {
   drawHatch();
 }
 
-function spaceFloor(fy) {
+export function spaceFloor(fy) {
   // Hazard stripes along the edge of the deck and a glowing guide light
   ctx.save();
   ctx.beginPath();

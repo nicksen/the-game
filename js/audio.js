@@ -1,15 +1,16 @@
-'use strict';
 // Synthesized sound effects (no audio assets)
+
+import { pick, rand } from './canvas.js';
 
 let AC = null,
   noiseBuf = null,
   muted = false,
   lastHitSound = 0;
-function toggleMute() {
+export function toggleMute() {
   muted = !muted;
   return muted;
 }
-function ac() {
+export function ac() {
   if (!AC) {
     try {
       AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -58,7 +59,7 @@ function tone(type, f0, f1, dur, peak, delay = 0) {
   o.start(t);
   o.stop(t + dur + 0.05);
 }
-const sfx = {
+export const sfx = {
   hit(i) {
     const now = performance.now();
     if (now - lastHitSound < 45) return;

@@ -1,47 +1,53 @@
-'use strict';
 // Shared game state, the dummy's dialogue, and damage/coin bookkeeping
 
+import { pick, rand } from './canvas.js';
+import { persist, save } from './save.js';
+import { zeroG } from './physics.js';
+import { addText, burst } from './effects.js';
+import { AIRLOCK, airlock } from './airlock.js';
+import { updateHud } from './ui.js';
+
 // ---------- Input ----------
-const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
-let drag = null,
+export const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
+export let drag = null,
   heldProp = null;
-function startDrag(p) {
+export function startDrag(p) {
   drag = p;
 }
-function endDrag() {
+export function endDrag() {
   drag = null;
 }
-function holdProp(pr) {
+export function holdProp(pr) {
   heldProp = pr;
 }
-function dropProp() {
+export function dropProp() {
   heldProp = null;
 }
 
 // ---------- How the dummy is doing ----------
 const DIZZY_PAIN = 70;
-let pain = 0,
+export let pain = 0,
   hurtT = 0,
   bodyFlash = 0;
-let combo = 0,
+export let combo = 0,
   lastHit = 0,
   lastIdle = performance.now(),
   sessionDmg = 0,
   wasDizzy = false;
-const idle = { action: 'breathe', t: 0, dur: 200 };
-let speech = null;
-const isDizzy = () => pain > DIZZY_PAIN;
-function resetDummyCondition() {
+export const idle = { action: 'breathe', t: 0, dur: 200 };
+export let speech = null;
+export const isDizzy = () => pain > DIZZY_PAIN;
+export function resetDummyCondition() {
   pain = 0;
   sessionDmg = 0;
   hurtT = 0;
 }
 
 // ---------- Screen effects ----------
-const screenFx = { shake: 0, flash: 0, swingT: 0 };
+export const screenFx = { shake: 0, flash: 0, swingT: 0 };
 
 // ---------- Things in the room ----------
-const particles = [],
+export const particles = [],
   texts = [],
   bombs = [],
   pianos = [],
@@ -50,7 +56,7 @@ const particles = [],
   vikings = [];
 
 // ---------- Dialogue ----------
-const LINES = {
+export const LINES = {
   hit: [
     'Ow!',
     'Not the face!',
@@ -105,13 +111,13 @@ const LINES = {
   ],
 };
 
-function say(lines, force = false) {
+export function say(lines, force = false) {
   if (!force && speech && speech.t < 70) return;
   speech = { text: pick(lines), t: 0 };
 }
 
 // Comic sound-effect words popped up on big hits, by damage kind
-const WORDS = {
+export const WORDS = {
   punch: ['POW!', 'BAM!', 'WHAM!', 'SMACK!'],
   bat: ['WHACK!', 'BONK!', 'CRACK!'],
   chicken: ['SQUEAK!', 'BAWK!'],
@@ -128,11 +134,11 @@ const WORDS = {
   couch: ['WHUMP!', 'CRASH!', 'SOFA SLAM!'],
   furniture: ['CRASH!', 'WHAM!', 'KER-SMASH!'],
 };
-const WORD_COLORS = ['#ff3b3b', '#ffd23f', '#3bd1ff', '#ff7bd5', '#7dff6b'];
+export const WORD_COLORS = ['#ff3b3b', '#ffd23f', '#3bd1ff', '#ff7bd5', '#7dff6b'];
 
 // ---------- Damage ----------
 // Hurts the dummy at body point `p`, pays out coins (more during a combo) and reacts.
-function damage(p, amount, kind = 'impact') {
+export function damage(p, amount, kind = 'impact') {
   amount = Math.max(1, Math.round(amount));
   const now = performance.now();
   combo = now - lastHit < 1300 ? combo + 1 : 1;
@@ -172,7 +178,7 @@ function damage(p, amount, kind = 'impact') {
 }
 
 // Pain and flashes fade, speech bubbles expire, and the dummy pipes up when dizzy or bored.
-function stepTimers(now) {
+export function stepTimers(now) {
   pain = Math.max(0, pain * 0.996 - 0.25);
   if (hurtT > 0) hurtT--;
   bodyFlash *= 0.85;

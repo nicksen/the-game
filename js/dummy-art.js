@@ -1,5 +1,9 @@
-'use strict';
 // Drawing the dummy in its different looks
+
+import { OUT, RED, YEL, blob, chain, circle, ctx, joint, mix, rr, seg, star } from './canvas.js';
+import { save } from './save.js';
+import { bodyFlash, hurtT, idle, isDizzy, pointer, sessionDmg } from './state.js';
+import { B, blinkT, idling } from './dummy.js';
 
 // Crash-test-dummy target marker
 function marker(x, y, r) {
@@ -23,7 +27,7 @@ function marker(x, y, r) {
   ctx.stroke();
 }
 
-const LOOKS = {
+export const LOOKS = {
   dummy: {
     name: 'Crash Dummy',
     icon: '🟡',
@@ -49,13 +53,13 @@ const LOOKS = {
     legW: 15,
   },
 };
-let lookId = LOOKS[save.look] ? save.look : 'dummy';
-function chooseLook(id) {
+export let lookId = LOOKS[save.look] ? save.look : 'dummy';
+export function chooseLook(id) {
   lookId = save.look = id;
 }
 const shadeRGB = (c) => c.map((v) => v * 0.84);
 
-function drawDummy() {
+export function drawDummy() {
   const look = LOOKS[lookId],
     t = bodyFlash * 0.7;
   const c = (part, back = false) => mix(back ? shadeRGB(look[part]) : look[part], RED, t);
@@ -353,7 +357,7 @@ function drawCirclingStars(h) {
 }
 
 // Cartoon x-ray flash while being electrocuted
-function drawSkeleton() {
+export function drawSkeleton() {
   const bones = [
     [B.neck, B.pelvis],
     [B.neck, B.lElbow, B.lHand],

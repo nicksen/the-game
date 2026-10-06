@@ -1,10 +1,16 @@
-'use strict';
 // The airlock in zero-g rooms
+
+import { W, box, circle, ctx, floorY, rand } from './canvas.js';
+import { ac, sfx } from './audio.js';
+import { zeroG } from './physics.js';
+import { LINES, bombs, couches, drag, heldProp, particles, projectiles, say, screenFx } from './state.js';
+import { points } from './dummy.js';
+import { props } from './furniture.js';
 
 // Alarm for `warn` frames, then the hatch on the left wall opens for `open` frames and sucks everything toward it.
 // After closing it needs `recharge` frames before it can be opened again.
-const AIRLOCK = { warn: 60, open: 200, h: 200, recharge: 600, maxCoins: 150 };
-const airlock = { t: -1, earned: 0, cooldown: 0 };
+export const AIRLOCK = { warn: 60, open: 200, h: 200, recharge: 600, maxCoins: 150 };
+export const airlock = { t: -1, earned: 0, cooldown: 0 };
 const hatchY = () => floorY() - 140;
 
 // How far open the doors are: 0 during the alarm, easing to 1 and back to 0 as it opens and closes
@@ -14,7 +20,7 @@ function airlockOpenness() {
   return Math.max(0, Math.min(1, t / 15, (AIRLOCK.open - t) / 20));
 }
 
-function openAirlock() {
+export function openAirlock() {
   if (!zeroG() || airlock.t >= 0 || airlock.cooldown > 0) return;
   airlock.t = 0;
   airlock.earned = 0;
@@ -23,7 +29,7 @@ function openAirlock() {
 }
 
 // Runs the alarm → open → close cycle and counts down the recharge.
-function stepAirlock() {
+export function stepAirlock() {
   if (airlock.cooldown > 0 && --airlock.cooldown % 60 === 0) updateAirlockBtn();
   if (airlock.t < 0) return;
   const t = airlock.t++;
@@ -116,7 +122,7 @@ function suckTowardHatch(o) {
 }
 
 const airlockBtn = document.getElementById('airlockBtn');
-function updateAirlockBtn() {
+export function updateAirlockBtn() {
   airlockBtn.style.display = zeroG() ? '' : 'none';
   airlockBtn.disabled = airlock.t >= 0 || airlock.cooldown > 0;
   // Show the seconds left while recharging
@@ -127,7 +133,7 @@ airlockBtn.onclick = () => {
   openAirlock();
 };
 
-function drawHatch() {
+export function drawHatch() {
   const hy = hatchY(),
     h = AIRLOCK.h,
     top = hy - h / 2,

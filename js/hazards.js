@@ -1,8 +1,16 @@
-'use strict';
 // Things the tools throw, drop or fire: bombs, pianos, couches, projectiles and lightning
 
+import { W, circle, ctx, drawShadow, floorY, pick, rand, rr, star } from './canvas.js';
+import { sfx } from './audio.js';
+import { phys, zeroG } from './physics.js';
+import { bombs, couches, damage, heldProp, pianos, pointer, projectiles, screenFx } from './state.js';
+import { addText, burst } from './effects.js';
+import { B, points } from './dummy.js';
+import { props } from './furniture.js';
+import { nearestPoint } from './tools.js';
+
 // ---------- Bombs ----------
-function dropBomb() {
+export function dropBomb() {
   bombs.push({
     x: pointer.x,
     y: Math.min(pointer.y, floorY() - 14),
@@ -13,7 +21,7 @@ function dropBomb() {
   sfx.tick();
 }
 
-function stepBombs(fy) {
+export function stepBombs(fy) {
   const g = phys().g;
   for (let i = bombs.length - 1; i >= 0; i--) {
     const b = bombs[i];
@@ -42,7 +50,7 @@ function stepBombs(fy) {
   }
 }
 
-function drawBombs() {
+export function drawBombs() {
   for (const b of bombs) {
     drawShadow(b.x, floorY() - b.y, 14);
     const blink = b.fuse < 40 && Math.floor(b.fuse / 4) % 2 === 0;
@@ -116,13 +124,13 @@ function explode(b, R = 280, F = 42, kind = 'bomb') {
 }
 
 // ---------- Pianos ----------
-function dropPiano() {
+export function dropPiano() {
   // Without gravity to speed it up, the piano gets a harder shove
   pianos.push({ x: pointer.x, y: -120, vy: zeroG() ? 10 : 2, w: 150, h: 100, hit: false, landed: 0, alpha: 1 });
   sfx.swoosh();
 }
 
-function stepPianos(fy) {
+export function stepPianos(fy) {
   const g = phys().g;
   for (let i = pianos.length - 1; i >= 0; i--) {
     const pn = pianos[i];
@@ -168,7 +176,7 @@ function stepPianos(fy) {
   }
 }
 
-function drawPianos() {
+export function drawPianos() {
   for (const pn of pianos) {
     if (!pn.landed) {
       const warn = Math.max(0, Math.min(1, (pn.y + 300) / (floorY() + 300)));
@@ -214,7 +222,7 @@ function drawPianos() {
 }
 
 // ---------- Couches ----------
-function throwCouch() {
+export function throwCouch() {
   // Heaved in from the nearest side, tumbling end over end
   const sx = pointer.x < W / 2 ? -90 : W + 90,
     sy = floorY() - 260,
@@ -237,7 +245,7 @@ function throwCouch() {
   sfx.swoosh();
 }
 
-function stepCouches(fy) {
+export function stepCouches(fy) {
   for (let i = couches.length - 1; i >= 0; i--) {
     const c = couches[i];
     c.age++;
@@ -304,7 +312,7 @@ function stepCouches(fy) {
   }
 }
 
-function drawCouches() {
+export function drawCouches() {
   for (const c of couches) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, c.alpha);
@@ -344,7 +352,7 @@ function launch(type, sx, sy, vx, vy, g, r, extra = {}) {
   projectiles.push({ type, x: sx, y: sy, vx, vy, g, r, age: 0, rot: 0, ...extra });
 }
 
-function throwTomato() {
+export function throwTomato() {
   // Lobbed from the nearest side of the room toward the click
   const sx = pointer.x < W / 2 ? -20 : W + 20,
     sy = floorY() - 160,
@@ -354,14 +362,14 @@ function throwTomato() {
   sfx.swoosh();
 }
 
-function fireRocket() {
+export function fireRocket() {
   // Fired from the far side of the room at the click height
   const fromLeft = pointer.x > W / 2;
   launch('rocket', fromLeft ? -40 : W + 40, pointer.y, fromLeft ? 20 : -20, 0, 0, 10);
   sfx.rocket();
 }
 
-function dropMeteor() {
+export function dropMeteor() {
   const tx = pointer.x,
     ty = floorY(),
     sx = tx + (tx < W / 2 ? 350 : -350),
@@ -371,7 +379,7 @@ function dropMeteor() {
   sfx.meteor();
 }
 
-function stepProjectiles(fy) {
+export function stepProjectiles(fy) {
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const pr = projectiles[i];
     pr.vy += pr.g;
@@ -420,7 +428,7 @@ function projectileHit(pr, p) {
   }
 }
 
-function drawProjectiles() {
+export function drawProjectiles() {
   for (const pr of projectiles) {
     ctx.save();
     ctx.translate(pr.x, pr.y);
@@ -504,14 +512,14 @@ function drawProjectiles() {
 }
 
 // ---------- Lightning ----------
-let zapT = 0,
+export let zapT = 0,
   zapTarget = null;
-function stopZap() {
+export function stopZap() {
   zapT = 0;
 }
 
 // Electrocutes the body part near the pointer, or just strikes the floor if nothing is close.
-function zap() {
+export function zap() {
   const { p, d } = nearestPoint(pointer.x, pointer.y);
   sfx.zap();
   if (p && d < 60) {
@@ -524,7 +532,7 @@ function zap() {
 }
 
 // Electrocution: twitch the whole body and tick damage
-function stepZap() {
+export function stepZap() {
   if (zapT <= 0) return;
   zapT--;
   if (!zapTarget.fake) {
@@ -539,7 +547,7 @@ function stepZap() {
   }
 }
 
-function drawBolt() {
+export function drawBolt() {
   if (zapT <= 0 || !zapTarget) return;
   const tx = zapTarget.x,
     ty = zapTarget.y;

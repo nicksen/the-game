@@ -1,8 +1,20 @@
-'use strict';
 // Drawing a frame
 
+import { H, OUT, W, ctx, drawShadow, floorY, rand, rr } from './canvas.js';
+import { pointer, screenFx, speech } from './state.js';
+import { drawParticles, drawTexts } from './effects.js';
+import { B } from './dummy.js';
+import { drawDummy, drawSkeleton } from './dummy-art.js';
+import { drawRoom } from './rooms.js';
+import { drawProp, propMoving, props } from './furniture.js';
+import { drawBolt, drawBombs, drawCouches, drawPianos, drawProjectiles, zapT, zapTarget } from './hazards.js';
+import { drawVikings } from './vikings.js';
+import { airlock } from './airlock.js';
+import { TOOLS, tool } from './tools.js';
+import { updateCombo } from './ui.js';
+
 // Back to front; everything inside the save/restore shakes with the screen.
-function render() {
+export function render() {
   ctx.save();
   ctx.clearRect(0, 0, W, H);
   ctx.translate(rand(-1, 1) * screenFx.shake, rand(-1, 1) * screenFx.shake);

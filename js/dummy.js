@@ -1,14 +1,21 @@
-'use strict';
 // The dummy: a verlet ragdoll that stands itself back up and idles
 
-let points = [],
+import { W, floorY, pick, rand } from './canvas.js';
+import { sfx } from './audio.js';
+import { GRAVITY, ITER, MAXV, phys, zeroG } from './physics.js';
+import { LINES, damage, drag, heldProp, idle, isDizzy, lastHit, pain, pointer, say } from './state.js';
+import { burst } from './effects.js';
+import { zapT } from './hazards.js';
+import { airlock } from './airlock.js';
+
+export let points = [],
   sticks = [];
-let standK = 0,
+export let standK = 0,
   idling = false,
   blinkT = 0;
-const B = {};
+export const B = {};
 
-function buildDummy() {
+export function buildDummy() {
   points = [];
   sticks = [];
   // In zero-g the dummy starts floating mid-room with a lazy drift
@@ -178,7 +185,7 @@ function pull(p, tx, ty, k) {
 }
 
 // Get back up when not too beaten up, idle when left alone, and blink now and then.
-function steerDummy(now, fy) {
+export function steerDummy(now, fy) {
   const dizzy = isDizzy();
   const canStand = !drag && !dizzy && pain < 35 && now - lastHit > 1500;
   standK = canStand ? Math.min(1, standK + 0.02) : 0;
@@ -205,7 +212,7 @@ function steerDummy(now, fy) {
 }
 
 // Verlet integration; a grabbed point just follows the pointer.
-function moveDummy() {
+export function moveDummy() {
   const { g, damp } = phys();
   for (const p of points) {
     if (p.cd > 0) p.cd--;
@@ -232,7 +239,7 @@ function moveDummy() {
 }
 
 // Hard wall impacts hurt, then the sticks are relaxed to hold the body together.
-function collideDummy(fy) {
+export function collideDummy(fy) {
   for (const p of points) {
     if (p === drag) continue;
     const imp = collideBounds(p, true);

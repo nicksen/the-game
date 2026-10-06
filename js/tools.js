@@ -1,7 +1,16 @@
-'use strict';
 // The toolbar weapons and what each one does when you click
 
-const TOOLS = [
+import { canvas, rand } from './canvas.js';
+import { sfx } from './audio.js';
+import { zeroG } from './physics.js';
+import { LINES, damage, holdProp, pointer, say, screenFx, startDrag } from './state.js';
+import { burst } from './effects.js';
+import { B, points } from './dummy.js';
+import { inProp, props } from './furniture.js';
+import { dropBomb, dropMeteor, dropPiano, fireRocket, throwCouch, throwTomato, zap } from './hazards.js';
+import { spawnVikings } from './vikings.js';
+
+export const TOOLS = [
   { id: 'grab', icon: '✋', name: 'Grab', price: 0, key: '1', use: grab },
   { id: 'punch', icon: '👊', name: 'Punch', price: 0, key: '2', use: () => strike(30, 16, 7, 'punch') },
   { id: 'chicken', icon: '🐔', name: 'Chicken', price: 0, key: '3', use: () => strike(40, 9, 3, 'chicken') },
@@ -24,20 +33,20 @@ const TOOLS = [
   { id: 'vikings', icon: '⚔️', name: 'Vikings', price: 900, key: 'v', use: spawnVikings, earthOnly: true },
   { id: 'meteor', icon: '☄️', name: 'Meteor', price: 1200, key: '=', use: dropMeteor },
 ];
-let tool = 'punch';
-function setTool(id) {
+export let tool = 'punch';
+export function setTool(id) {
   tool = id;
 }
 
-function useTool() {
+export function useTool() {
   screenFx.swingT = 1;
   TOOLS.find((t) => t.id === tool).use();
 }
 
 // Some tools make no sense without gravity
-const offHere = (t) => t.earthOnly && zeroG();
+export const offHere = (t) => t.earthOnly && zeroG();
 
-function nearestPoint(x, y) {
+export function nearestPoint(x, y) {
   let best = null,
     bd = Infinity;
   for (const p of points) {

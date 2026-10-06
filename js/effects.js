@@ -1,8 +1,11 @@
-'use strict';
 // Particles and floating comic text
 
+import { W, canvas, circle, ctx, mix, pick, rand, seg, star } from './canvas.js';
+import { phys } from './physics.js';
+import { particles, texts } from './state.js';
+
 // ---------- Particles ----------
-function burst(x, y, n, type, o = {}) {
+export function burst(x, y, n, type, o = {}) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2,
       s = (o.speed || 5) * rand(0.3, 1.3);
@@ -22,7 +25,7 @@ function burst(x, y, n, type, o = {}) {
   }
 }
 
-function stepParticles(fy) {
+export function stepParticles(fy) {
   const g = phys().g;
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -70,7 +73,7 @@ function stepParticles(fy) {
   }
 }
 
-function drawParticles() {
+export function drawParticles() {
   for (const p of particles) {
     const a = Math.max(0, 1 - p.life / p.max);
     ctx.globalAlpha = a;
@@ -136,7 +139,7 @@ function drawParticles() {
 // ---------- Comic text ----------
 const TEXT_MAX_POP = 1.2;
 
-function addText(x, y, text, color, size, rot = 0) {
+export function addText(x, y, text, color, size, rot = 0) {
   texts.push({ x, y, rot, life: 0, max: 50, sprite: textSprite(text, color, size) });
 }
 
@@ -173,7 +176,7 @@ function textSprite(text, color, size) {
   return { image: c, left, top, w, h };
 }
 
-function stepTexts() {
+export function stepTexts() {
   for (let i = texts.length - 1; i >= 0; i--) {
     const t = texts[i];
     t.life++;
@@ -182,7 +185,7 @@ function stepTexts() {
   }
 }
 
-function drawTexts() {
+export function drawTexts() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';

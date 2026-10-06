@@ -1,17 +1,26 @@
-'use strict';
 // HUD, toolbar, menu and input
+
+import { canvas, resize } from './canvas.js';
+import { persist, save } from './save.js';
+import { ac, sfx, toggleMute } from './audio.js';
+import { LINES, combo, drag, dropProp, endDrag, heldProp, lastHit, pointer, say } from './state.js';
+import { LOOKS, chooseLook, lookId } from './dummy-art.js';
+import { ROOMS, currentRoom, enterRoom, renderThumb, roomId } from './rooms.js';
+import { openAirlock } from './airlock.js';
+import { TOOLS, offHere, setTool, tool, useTool } from './tools.js';
+import { resetScene } from './main.js';
 
 // ---------- HUD ----------
 const coinsEl = document.getElementById('coins');
 const toastEl = document.getElementById('toast');
 let toastTimer = 0;
 
-function updateHud() {
+export function updateHud() {
   coinsEl.textContent = '🪙 ' + save.coins;
 }
 
 const comboEl = document.getElementById('combo');
-function updateCombo() {
+export function updateCombo() {
   const showCombo = combo >= 3 && performance.now() - lastHit < 1300;
   comboEl.style.opacity = showCombo ? 1 : 0;
   if (showCombo) comboEl.textContent = `x${combo} COMBO!`;
@@ -36,7 +45,7 @@ document.getElementById('roomBtn').onclick = openMenu;
 // ---------- Toolbar ----------
 const bar = document.getElementById('toolbar');
 
-function renderTools() {
+export function renderTools() {
   bar.innerHTML = '';
   TOOLS.forEach((t) => {
     const locked = !save.unlocked.includes(t.id);
@@ -91,7 +100,7 @@ function resetCursor() {
 }
 
 // Smoothed pointer velocity, used for punch direction and throwing.
-function trackPointer() {
+export function trackPointer() {
   pointer.vx += (pointer.x - pointer.lastX - pointer.vx) * 0.5;
   pointer.vy += (pointer.y - pointer.lastY - pointer.vy) * 0.5;
   pointer.lastX = pointer.x;
@@ -154,7 +163,7 @@ window.addEventListener('resize', resize);
 // ---------- Menu ----------
 const menuEl = document.getElementById('menu');
 
-function openMenu() {
+export function openMenu() {
   renderLooks();
   renderRooms();
   menuEl.classList.remove('hidden');

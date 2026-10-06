@@ -1,12 +1,11 @@
-'use strict';
 // Canvas, screen size, random helpers and shared drawing primitives
 
-const canvas = document.getElementById('game');
-let ctx = canvas.getContext('2d');
-let W = 0,
+export const canvas = document.getElementById('game');
+export let ctx = canvas.getContext('2d');
+export let W = 0,
   H = 0;
 
-function resize() {
+export function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   W = innerWidth;
   H = innerHeight;
@@ -17,7 +16,7 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 // Points the drawing globals at another canvas for the length of `draw`
-function drawingInto(context, width, height, draw) {
+export function drawingInto(context, width, height, draw) {
   const saved = [ctx, W, H];
   ctx = context;
   W = width;
@@ -25,21 +24,21 @@ function drawingInto(context, width, height, draw) {
   draw();
   [ctx, W, H] = saved;
 }
-const floorY = () => H - 110;
-const rand = (a, b) => a + Math.random() * (b - a);
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+export const floorY = () => H - 110;
+export const rand = (a, b) => a + Math.random() * (b - a);
+export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // ---------- Colors ----------
-const OUT = '#1d1d1d';
-const YEL = [245, 196, 0],
+export const OUT = '#1d1d1d';
+export const YEL = [245, 196, 0],
   RED = [255, 80, 60];
 // Blend two [r, g, b] colors; t = 0 gives a, t = 1 gives b
-const mix = (a, b, t) =>
+export const mix = (a, b, t) =>
   `rgb(${(a[0] + (b[0] - a[0]) * t) | 0},${(a[1] + (b[1] - a[1]) * t) | 0},${(a[2] + (b[2] - a[2]) * t) | 0})`;
 
 // ---------- Drawing primitives ----------
 // Rounded-rectangle path
-function rr(x, y, w, h, r) {
+export function rr(x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -48,12 +47,12 @@ function rr(x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-function circle(x, y, r) {
+export function circle(x, y, r) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
 }
 // Five-pointed star path
-function star(x, y, r, rot) {
+export function star(x, y, r, rot) {
   ctx.beginPath();
   for (let i = 0; i < 10; i++) {
     const a = rot + (i * Math.PI) / 5,
@@ -63,14 +62,14 @@ function star(x, y, r, rot) {
   ctx.closePath();
 }
 // Stroke a single line segment
-function seg(x1, y1, x2, y2) {
+export function seg(x1, y1, x2, y2) {
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
 }
 // Filled rectangle with an optional outline (pass stroke = null for none)
-function box(x, y, w, h, fill, stroke = 'rgba(0,0,0,0.45)', lw = 3) {
+export function box(x, y, w, h, fill, stroke = 'rgba(0,0,0,0.45)', lw = 3) {
   ctx.fillStyle = fill;
   ctx.fillRect(x, y, w, h);
   if (stroke) {
@@ -81,7 +80,7 @@ function box(x, y, w, h, fill, stroke = 'rgba(0,0,0,0.45)', lw = 3) {
 }
 
 // Floor shadow that shrinks and fades the higher `height` above the floor the object is
-function drawShadow(x, height, w) {
+export function drawShadow(x, height, w) {
   const fy = floorY();
   const s = Math.max(0.3, 1 - height / 500);
   ctx.fillStyle = `rgba(0,0,0,${0.3 * s})`;
@@ -91,7 +90,7 @@ function drawShadow(x, height, w) {
 }
 
 // Cartoon limb pieces: an outlined line through `pts`, a round outlined end, and a joint dot
-function chain(pts, w, col) {
+export function chain(pts, w, col) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.beginPath();
@@ -104,7 +103,7 @@ function chain(pts, w, col) {
   ctx.lineWidth = w;
   ctx.stroke();
 }
-function blob(p, r, col) {
+export function blob(p, r, col) {
   circle(p.x, p.y, r);
   ctx.fillStyle = col;
   ctx.fill();
@@ -112,7 +111,7 @@ function blob(p, r, col) {
   ctx.lineWidth = 3;
   ctx.stroke();
 }
-function joint(p) {
+export function joint(p) {
   circle(p.x, p.y, 3.5);
   ctx.fillStyle = OUT;
   ctx.fill();

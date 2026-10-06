@@ -1,11 +1,16 @@
-'use strict';
 // The viking horde
+
+import { OUT, W, box, chain, circle, ctx, floorY, pick, rand, rr, seg } from './canvas.js';
+import { sfx } from './audio.js';
+import { LINES, WORDS, WORD_COLORS, damage, pointer, say, vikings } from './state.js';
+import { addText, burst } from './effects.js';
+import { points } from './dummy.js';
 
 const HORDE_SIZE = 8,
   MAX_VIKINGS = 30;
 
 // A horde charges in from the edge nearest the click and runs across the floor
-function spawnVikings() {
+export function spawnVikings() {
   const dir = pointer.x < W / 2 ? 1 : -1,
     x0 = dir > 0 ? -60 : W + 60;
   const n = Math.max(0, Math.min(HORDE_SIZE, MAX_VIKINGS - vikings.length));
@@ -33,7 +38,7 @@ function spawnVikings() {
 
 // Each viking runs along the floor and chops the first body part that comes within reach of its weapon, once.
 let vikingStomp = 0;
-function stepVikings(fy) {
+export function stepVikings(fy) {
   for (let i = vikings.length - 1; i >= 0; i--) {
     const v = vikings[i];
     v.x += v.dir * v.speed;
@@ -220,6 +225,6 @@ function drawViking(v) {
 
   ctx.restore();
 }
-function drawVikings() {
+export function drawVikings() {
   for (const v of [...vikings].sort((a, b) => a.depth - b.depth)) drawViking(v);
 }

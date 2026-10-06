@@ -1,7 +1,33 @@
-'use strict';
 // Throwable furniture: which props each room has and how they move
 
-const PROPS = {
+import { W, ctx, floorY, rand } from './canvas.js';
+import { sfx } from './audio.js';
+import { GRAVITY, phys } from './physics.js';
+import { damage, heldProp, pointer, screenFx } from './state.js';
+import { burst } from './effects.js';
+import { points } from './dummy.js';
+import { roomId } from './rooms.js';
+import {
+  drawBed,
+  drawBookshelf,
+  drawChair,
+  drawCrate,
+  drawDesk,
+  drawFilingCabinet,
+  drawFridge,
+  drawHelmet,
+  drawLamp,
+  drawNightstand,
+  drawOxygenTank,
+  drawPlant,
+  drawTeddy,
+  drawTires,
+  drawToolbox,
+  drawWaterCooler,
+  drawWorkbench,
+} from './furniture-art.js';
+
+export const PROPS = {
   living: () => [
     { x: W * 0.72, w: 120, h: 190, mass: 2.2, draw: drawBookshelf },
     { x: W * 0.9, w: 76, h: 232, mass: 0.8, draw: drawLamp },
@@ -34,10 +60,10 @@ const PROPS = {
   ],
 };
 
-let props = [];
+export let props = [];
 
 // Specs give a floor position by default; `y`, `vx`, `vy`, `a` and `va` override the resting start.
-function makeProp(spec) {
+export function makeProp(spec) {
   const x = Math.max(spec.w / 2, Math.min(W - spec.w / 2, spec.x));
   return {
     ...spec,
@@ -51,7 +77,7 @@ function makeProp(spec) {
     landCd: 0,
   };
 }
-function buildProps() {
+export function buildProps() {
   props = (PROPS[roomId] || (() => []))().map(makeProp);
 }
 
@@ -69,7 +95,7 @@ function propCorners(p) {
   }));
 }
 // Is (x, y) inside the rotated prop, grown by `pad`?
-function inProp(p, x, y, pad = 0) {
+export function inProp(p, x, y, pad = 0) {
   const c = Math.cos(-p.a),
     s = Math.sin(-p.a),
     dx = x - p.x,
@@ -79,7 +105,7 @@ function inProp(p, x, y, pad = 0) {
   return Math.abs(lx) < p.w / 2 + pad && Math.abs(ly) < p.h / 2 + pad;
 }
 
-function stepProps(fy) {
+export function stepProps(fy) {
   const g = phys().g,
     space = g === 0;
   for (const p of props) {
@@ -186,7 +212,7 @@ function propHitDummy(p) {
   }
 }
 
-function drawProp(p) {
+export function drawProp(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(p.a);
@@ -194,4 +220,4 @@ function drawProp(p) {
   ctx.restore();
 }
 // Moving props are drawn in front of the dummy
-const propMoving = (p) => p === heldProp || Math.hypot(p.vx, p.vy) > 2;
+export const propMoving = (p) => p === heldProp || Math.hypot(p.vx, p.vy) > 2;

@@ -1,5 +1,26 @@
-'use strict';
 // The game loop: a fixed 60 Hz simulation step, then a render
+
+import { canvas, floorY, resize } from './canvas.js';
+import {
+  bombs,
+  couches,
+  dropProp,
+  endDrag,
+  pianos,
+  projectiles,
+  resetDummyCondition,
+  stepTimers,
+  vikings,
+} from './state.js';
+import { stepParticles, stepTexts } from './effects.js';
+import { buildDummy, collideDummy, moveDummy, steerDummy } from './dummy.js';
+import { buildProps, stepProps } from './furniture.js';
+import { stepBombs, stepCouches, stepPianos, stepProjectiles, stepZap, stopZap } from './hazards.js';
+import { stepVikings } from './vikings.js';
+import { airlock, stepAirlock, updateAirlockBtn } from './airlock.js';
+import { render } from './render.js';
+import { openMenu, renderTools, trackPointer, updateHud } from './ui.js';
+import './pwa.js';
 
 // The order matters: e.g. the airlock pulls on the dummy after it moves but before it collides.
 function step() {
@@ -42,7 +63,7 @@ function loop(now) {
 }
 
 // A fresh dummy and furniture, with everything thrown so far cleared away
-function resetScene() {
+export function resetScene() {
   buildDummy();
   buildProps();
   dropProp();

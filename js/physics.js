@@ -1,7 +1,8 @@
-'use strict';
 // Physics constants, with a gravity-free variant for zero-g rooms
 
-const GRAVITY = 0.6,
+import { currentRoom } from './rooms.js';
+
+export const GRAVITY = 0.6,
   DAMP = 0.99,
   BOUNCE = 0.4,
   FRICTION = 0.85,
@@ -12,5 +13,5 @@ const PHYS = {
   earth: { g: 1, damp: DAMP, bounce: BOUNCE, friction: FRICTION },
   space: { g: 0, damp: 0.998, bounce: 0.75, friction: 0.97 },
 };
-const zeroG = () => !!currentRoom().zeroG;
-const phys = () => (zeroG() ? PHYS.space : PHYS.earth);
+export const zeroG = () => !!currentRoom().zeroG;
+export const phys = () => (zeroG() ? PHYS.space : PHYS.earth);

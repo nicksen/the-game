@@ -5,18 +5,31 @@ bun = "1.4.2"
 description = "Install dependencies"
 run = "bun install --frozen-lockfile"
 
+[tasks.bundle]
+description = "Bundle the game's modules into build/game.js, the one script index.html loads"
+sources = ["js/*.js"]
+outputs = ["build/game.js"]
+run = "bun build js/main.js --format=iife --outfile build/game.js"
+
+[tasks.watch]
+description = "Rebuild build/game.js on every change, for playing from index.html while editing"
+run = "bun build js/main.js --format=iife --outfile build/game.js --watch"
+
 [tasks.start]
 description = "Play the game through the launcher, without compiling it"
+depends = ["bundle"]
 run = "bun launcher/server.ts"
 
 [tasks.build]
 description = "Compile a self-contained executable for this computer into dist/"
-sources = ["launcher/*.ts", "index.html", "style.css", "js/*.js", "sw.js", "manifest.webmanifest", "icons/*.png"]
+depends = ["bundle"]
+sources = ["launcher/*.ts", "index.html", "style.css", "build/game.js", "sw.js", "manifest.webmanifest", "icons/*.png"]
 outputs = ["dist/smack-the-dummy"]
 run = "bun build --compile --minify launcher/server.ts --outfile dist/smack-the-dummy"
 
 [tasks."build:all"]
 description = "Compile executables for macOS, Windows and Linux into dist/"
+depends = ["bundle"]
 run = [
   "bun build --compile --minify --target=bun-darwin-arm64 launcher/server.ts --outfile dist/smack-the-dummy-macos-arm64",
   "bun build --compile --minify --target=bun-darwin-x64 launcher/server.ts --outfile dist/smack-the-dummy-macos-x64",
@@ -26,6 +39,7 @@ run = [
 
 [tasks.site]
 description = "Collect the game's files into _site/ for GitHub Pages"
+depends = ["bundle"]
 run = "bun tools/build-site.ts"
 
 [tasks.lint]
@@ -45,7 +59,7 @@ run = "bunx prettier --check ."
 
 [tasks.test]
 description = "Replay a scripted play session and compare it with the recorded baseline"
-depends = ["install"]
+depends = ["install", "bundle"]
 run = "bun tests/replay.mjs"
 
 [tasks."test:exe"]
@@ -55,10 +69,10 @@ run = "bun tests/executable.mjs"
 
 [tasks."test:pwa"]
 description = "Check the installable app: Chrome's install criteria, offline caching, and playing offline"
-depends = ["install"]
+depends = ["install", "bundle"]
 run = "bun tests/pwa.mjs"
 
 [tasks."test:update"]
 description = "Re-record the replay baseline after an intended change"
-depends = ["install"]
+depends = ["install", "bundle"]
 run = "bun tests/replay.mjs --update"

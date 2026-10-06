@@ -1,8 +1,9 @@
-'use strict';
 // Drawing the throwable furniture
 
+import { box, circle, ctx, rr, seg } from './canvas.js';
+
 // Each draw function works in local coordinates: centered on the prop, floor at y = h / 2.
-function drawBookshelf(w, h) {
+export function drawBookshelf(w, h) {
   const L = -w / 2,
     T = -h / 2;
   box(L, T, w, h, '#6b4423', '#3b2412');
@@ -19,7 +20,7 @@ function drawBookshelf(w, h) {
   }
 }
 
-function drawLamp(w, h) {
+export function drawLamp(w, h) {
   const F = h / 2,
     T = -h / 2;
   const glow = ctx.createRadialGradient(0, T + 50, 5, 0, T + 50, 140);
@@ -47,7 +48,7 @@ function drawLamp(w, h) {
   ctx.stroke();
 }
 
-function drawPlant(w, h) {
+export function drawPlant(w, h) {
   const F = h / 2;
   ctx.fillStyle = '#3f8f3f';
   for (const [a, l] of [
@@ -75,7 +76,7 @@ function drawPlant(w, h) {
   ctx.fill();
 }
 
-function drawWaterCooler(w, h) {
+export function drawWaterCooler(w, h) {
   const F = h / 2;
   box(-26, F - 110, 52, 110, '#e8e8e8', '#999');
   box(-6, F - 80, 12, 8, '#3b82f6', null);
@@ -87,7 +88,7 @@ function drawWaterCooler(w, h) {
   ctx.stroke();
 }
 
-function drawFilingCabinet(w, h) {
+export function drawFilingCabinet(w, h) {
   const F = h / 2;
   box(-36, F - 140, 72, 140, '#8a929e', '#4b525c');
   for (let i = 0; i < 3; i++) {
@@ -96,7 +97,7 @@ function drawFilingCabinet(w, h) {
   }
 }
 
-function drawDesk(w, h) {
+export function drawDesk(w, h) {
   const F = h / 2;
   box(-110, F - 92, 220, 14, '#7a5230', '#3f2a17');
   box(-102, F - 78, 10, 78, '#3f2a17', null);
@@ -117,7 +118,7 @@ function drawDesk(w, h) {
   ctx.stroke();
 }
 
-function drawFridge(w, h) {
+export function drawFridge(w, h) {
   const F = h / 2;
   rr(-50, F - 230, 100, 230, 10);
   ctx.fillStyle = '#f4f4f4';
@@ -140,7 +141,7 @@ function drawFridge(w, h) {
   }
 }
 
-function drawChair(w, h) {
+export function drawChair(w, h) {
   const F = h / 2,
     wood = '#9c6b3f',
     dark = '#5a3a1e';
@@ -152,7 +153,7 @@ function drawChair(w, h) {
   box(14, F - 80, 14, 4, dark, null);
 }
 
-function drawWorkbench(w, h) {
+export function drawWorkbench(w, h) {
   const F = h / 2;
   box(-125, F - 100, 250, 16, '#8b5a2b', '#4f3218');
   box(-115, F - 84, 12, 84, '#4f3218', null);
@@ -161,7 +162,7 @@ function drawWorkbench(w, h) {
   box(60, F - 124, 40, 24, '#3d5a80', '#223', 2);
 }
 
-function drawTires(w, h) {
+export function drawTires(w, h) {
   const F = h / 2;
   for (let i = 0; i < 3; i++) {
     const y = F - 18 - i * 30;
@@ -174,7 +175,7 @@ function drawTires(w, h) {
   }
 }
 
-function drawToolbox(w, h) {
+export function drawToolbox(w, h) {
   const F = h / 2;
   rr(-35, F - 34, 70, 34, 5);
   ctx.fillStyle = '#c0392b';
@@ -194,7 +195,7 @@ function drawToolbox(w, h) {
   box(-5, F - 28, 10, 8, '#ddd', null);
 }
 
-function drawBed(w, h) {
+export function drawBed(w, h) {
   const F = h / 2,
     bw = 250;
   rr(-bw / 2 - 10, F - 160, 26, 160, 8);
@@ -220,7 +221,7 @@ function drawBed(w, h) {
   ctx.stroke();
 }
 
-function drawNightstand(w, h) {
+export function drawNightstand(w, h) {
   const F = h / 2;
   box(-32, F - 70, 64, 70, '#8a5a3b', '#3b2412');
   box(-6, F - 45, 12, 5, '#3b2412', null);
@@ -235,7 +236,7 @@ function drawNightstand(w, h) {
   ctx.fill();
 }
 
-function drawTeddy(w, h) {
+export function drawTeddy(w, h) {
   const F = h / 2,
     fur = '#a0703f',
     dark = '#6b4423',
@@ -265,7 +266,7 @@ function drawTeddy(w, h) {
   ball(5, -52, 2, '#222', false);
 }
 
-function drawCrate(w, h) {
+export function drawCrate(w, h) {
   box(-w / 2, -h / 2, w, h, '#8a93a8', '#3d4354');
   ctx.strokeStyle = '#3d4354';
   ctx.lineWidth = 4;
@@ -279,7 +280,7 @@ function drawCrate(w, h) {
   ctx.fillText('SUPPLIES', 0, 1);
 }
 
-function drawOxygenTank(w, h) {
+export function drawOxygenTank(w, h) {
   rr(-w / 2, -h / 2 + 16, w, h - 16, w / 2);
   ctx.fillStyle = '#f0f0f0';
   ctx.fill();
@@ -298,7 +299,7 @@ function drawOxygenTank(w, h) {
   seg(0, 18, 5, 13);
 }
 
-function drawHelmet(w, h) {
+export function drawHelmet(w, h) {
   const r = w / 2;
   circle(0, 0, r);
   ctx.fillStyle = '#f4f4f4';

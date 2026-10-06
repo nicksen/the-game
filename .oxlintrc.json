@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["dist/**", "_site/**"],
+  "ignorePatterns": ["dist/**", "_site/**", "build/**"],
   "overrides": [
     {
       // The game's scripts share top-level names through <script> tags, which oxlint reads as unused

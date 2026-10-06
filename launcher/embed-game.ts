@@ -7,7 +7,7 @@ const ROOT = new URL('..', import.meta.url).pathname;
 export const GAME_FILE_PATTERNS = [
   'index.html',
   'style.css',
-  'js/*.js',
+  'build/game.js',
   'sw.js',
   'manifest.webmanifest',
   'icons/*.png',
