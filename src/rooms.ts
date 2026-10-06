@@ -80,13 +80,14 @@ export const ROOMS = [
     floorDecor: spaceFloor,
   },
 ];
+type Room = (typeof ROOMS)[number];
 export let roomId = ROOMS.find((r) => r.id === save.room)?.id ?? 'living';
 export function currentRoom() {
   const room = ROOMS.find((r) => r.id === roomId);
   if (!room) throw new Error(`There's no room called ${roomId}`);
   return room;
 }
-export function enterRoom(id) {
+export function enterRoom(id: string) {
   roomId = save.room = id;
 }
 
@@ -113,7 +114,7 @@ export function drawRoom() {
 }
 
 // Render a room preview into a small canvas
-export function renderThumb(room, cv) {
+export function renderThumb(room: Room, cv: HTMLCanvasElement) {
   const tw = 248,
     th = 160;
   cv.width = tw;

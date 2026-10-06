@@ -8,7 +8,7 @@ import { LINES, combo, drag, dropProp, endDrag, heldProp, lastHit, pointer, say 
 import { LOOKS, chooseLook, lookId } from './dummy-art.ts';
 import { ROOMS, currentRoom, enterRoom, renderThumb, roomId } from './rooms.ts';
 import { openAirlock } from './airlock.ts';
-import { TOOLS, currentTool, offHere, setTool, tool, useTool } from './tools.ts';
+import { TOOLS, currentTool, offHere, setTool, tool, useTool, type Tool } from './tools.ts';
 import { resetScene } from './main.ts';
 
 // ---------- HUD ----------
@@ -27,7 +27,7 @@ export function updateCombo() {
   if (showCombo) comboEl.textContent = `x${combo} COMBO!`;
 }
 
-function toast(msg) {
+function toast(msg: string) {
   toastEl.textContent = msg;
   toastEl.style.opacity = '1';
   clearTimeout(toastTimer);
@@ -61,15 +61,15 @@ export function renderTools() {
 }
 
 // Shake a toolbar button to say "no"
-function wiggle(el) {
-  if (!el) return;
+function wiggle(el: Element | undefined) {
+  if (!(el instanceof HTMLElement)) return;
   el.classList.remove('nope');
   void el.offsetWidth;
   el.classList.add('nope');
 }
 
 // Selecting a locked tool buys it if you can afford it.
-function selectTool(t, el) {
+function selectTool(t: Tool, el: Element | undefined) {
   ac();
   if (offHere(t)) {
     toast(`No ${t.icon} ${t.name} in the ${currentRoom().name}!`);
@@ -137,7 +137,7 @@ window.addEventListener('pointerup', () => {
   if (heldProp) {
     // Heavier furniture flies a little slower
     const k = 1.25 - 0.15 * heldProp.mass,
-      clamp = (v) => Math.max(-40, Math.min(40, v * k));
+      clamp = (v: number) => Math.max(-40, Math.min(40, v * k));
     heldProp.vx = clamp(pointer.vx);
     heldProp.vy = clamp(pointer.vy);
     heldProp.va = (pointer.vx * 0.012) / heldProp.mass;
@@ -203,7 +203,7 @@ function renderRooms() {
   }
 }
 
-function chooseRoom(id) {
+function chooseRoom(id: string) {
   ac();
   enterRoom(id);
   persist();

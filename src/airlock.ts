@@ -51,10 +51,10 @@ export function stepAirlock() {
 }
 
 // Suction toward the hatch, a bit stronger up close; `o` is how far open the doors are (0..1).
-function suckTowardHatch(o) {
+function suckTowardHatch(o: number) {
   const hy = hatchY(),
     half = (AIRLOCK.h / 2) * o;
-  const suck = (x, y, s) => {
+  const suck = (x: number, y: number, s: number) => {
     const dx = -x,
       dy = hy - y,
       d = Math.hypot(dx, dy) || 1;
@@ -62,7 +62,7 @@ function suckTowardHatch(o) {
     return [(dx / d) * f, (dy / d) * f];
   };
   // Small things that reach the opening are lost to space
-  const gone = (x, y, r = 0) => x < 30 + r && Math.abs(y - hy) < half;
+  const gone = (x: number, y: number, r = 0) => x < 30 + r && Math.abs(y - hy) < half;
 
   for (const p of points) {
     if (p === drag) continue;

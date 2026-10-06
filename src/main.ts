@@ -48,7 +48,7 @@ const STEP_MS = 1000 / 60,
 let acc = 0,
   last = 0;
 
-function loop(now) {
+function loop(now: number) {
   acc += Math.min(100, now - last);
   last = now;
   let n = 0;

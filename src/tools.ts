@@ -3,7 +3,7 @@
 import { canvas, rand } from './canvas.ts';
 import { sfx } from './audio.ts';
 import { zeroG } from './physics.ts';
-import { LINES, damage, holdProp, pointer, say, screenFx, startDrag } from './state.ts';
+import { LINES, damage, holdProp, pointer, say, screenFx, startDrag, type DamageKind } from './state.ts';
 import { burst } from './effects.ts';
 import { B, points, type Point } from './dummy.ts';
 import { inProp, props } from './furniture.ts';
@@ -33,8 +33,9 @@ export const TOOLS = [
   { id: 'vikings', icon: '⚔️', name: 'Vikings', price: 900, key: 'v', use: spawnVikings, earthOnly: true },
   { id: 'meteor', icon: '☄️', name: 'Meteor', price: 1200, key: '=', use: dropMeteor },
 ];
+export type Tool = (typeof TOOLS)[number];
 export let tool = 'punch';
-export function setTool(id) {
+export function setTool(id: string) {
   tool = id;
 }
 
@@ -50,9 +51,9 @@ export function useTool() {
 }
 
 // Some tools make no sense without gravity
-export const offHere = (t) => t.earthOnly && zeroG();
+export const offHere = (t: Tool) => t.earthOnly && zeroG();
 
-export function nearestPoint(x, y) {
+export function nearestPoint(x: number, y: number) {
   let best: Point | null = null,
     bd = Infinity;
   for (const p of points) {
@@ -84,7 +85,7 @@ function grab() {
 }
 
 // Hit the body part nearest the pointer, knocking it along `dir` (or away from the pointer).
-function strike(reach, force, dmg, kind, dir: [number, number] | null = null) {
+function strike(reach: number, force: number, dmg: number, kind: DamageKind, dir: [number, number] | null = null) {
   const { p, d } = nearestPoint(pointer.x, pointer.y);
   if (!p || d > reach) {
     sfx.swoosh();

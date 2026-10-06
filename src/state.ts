@@ -139,6 +139,7 @@ export const WORDS = {
   couch: ['WHUMP!', 'CRASH!', 'SOFA SLAM!'],
   furniture: ['CRASH!', 'WHAM!', 'KER-SMASH!'],
 };
+export type DamageKind = keyof typeof WORDS;
 export const WORD_COLORS = ['#ff3b3b', '#ffd23f', '#3bd1ff', '#ff7bd5', '#7dff6b'];
 
 // ---------- Damage ----------

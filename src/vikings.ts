@@ -53,7 +53,7 @@ export function spawnVikings() {
 
 // Each viking runs along the floor and chops the first body part that comes within reach of its weapon, once.
 let vikingStomp = 0;
-export function stepVikings(fy) {
+export function stepVikings(fy: number) {
   for (let i = vikings.length - 1; i >= 0; i--) {
     const v = vikings[i];
     v.x += v.dir * v.speed;
@@ -94,7 +94,7 @@ export function stepVikings(fy) {
 }
 
 // Drawn facing right in local coordinates with the feet at y = 0, then mirrored for left-runners
-function drawViking(v) {
+function drawViking(v: Viking) {
   const fy = floorY(),
     s = v.scale,
     run = v.phase;
@@ -108,7 +108,7 @@ function drawViking(v) {
   ctx.scale(v.dir * s, s);
 
   // Legs pumping, back leg darker
-  const leg = (a, col) => {
+  const leg = (a: number, col: string) => {
     const foot = { x: Math.sin(a) * 20, y: -4 - Math.max(0, Math.cos(a)) * 8 };
     const knee = { x: Math.sin(a) * 10 + 6, y: -24 };
     chain([{ x: 0, y: -42 }, knee, foot], 8, col);
@@ -162,7 +162,7 @@ function drawViking(v) {
   circle(10, -98, 2);
   ctx.fillStyle = OUT;
   ctx.fill();
-  const horn = (bx, flip) => {
+  const horn = (bx: number, flip: number) => {
     ctx.beginPath();
     ctx.moveTo(bx - 3, -102);
     ctx.quadraticCurveTo(bx + flip * 14, -108, bx + flip * 12, -126);
