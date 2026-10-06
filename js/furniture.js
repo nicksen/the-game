@@ -126,7 +126,7 @@ function keepPropInRoom(p, fy, space) {
         p.landCd = 10;
         if (p.soft) sfx.squeak();
         else sfx.thud();
-        shake = Math.max(shake, Math.min(15, p.vy * p.mass * 0.4));
+        screenFx.shake = Math.max(screenFx.shake, Math.min(15, p.vy * p.mass * 0.4));
         burst(p.x, fy - 5, 6, 'smoke', { speed: 2, life: 40, size: 10 });
       }
       if (space) {

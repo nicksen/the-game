@@ -5,7 +5,7 @@
 function render() {
   ctx.save();
   ctx.clearRect(0, 0, W, H);
-  ctx.translate(rand(-1, 1) * shake, rand(-1, 1) * shake);
+  ctx.translate(rand(-1, 1) * screenFx.shake, rand(-1, 1) * screenFx.shake);
   drawRoom();
   for (const p of props) if (!propMoving(p)) drawProp(p);
   drawShadow(B.pelvis.x, floorY() - B.pelvis.y, 50);
@@ -30,8 +30,8 @@ function render() {
 
 // Explosion flash, and the red alarm pulse while the airlock cycles
 function drawScreenTint() {
-  if (flash > 0.01) {
-    ctx.fillStyle = `rgba(255,240,200,${flash})`;
+  if (screenFx.flash > 0.01) {
+    ctx.fillStyle = `rgba(255,240,200,${screenFx.flash})`;
     ctx.fillRect(0, 0, W, H);
   }
   if (airlock.t >= 0) {
@@ -78,8 +78,8 @@ function drawCursor() {
   const t = TOOLS.find((t) => t.id === tool);
   ctx.save();
   ctx.translate(pointer.x, pointer.y);
-  ctx.rotate(-swingT * 0.9);
-  ctx.scale(1 + swingT * 0.3, 1 + swingT * 0.3);
+  ctx.rotate(-screenFx.swingT * 0.9);
+  ctx.scale(1 + screenFx.swingT * 0.3, 1 + screenFx.swingT * 0.3);
   ctx.font = '44px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

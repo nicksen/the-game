@@ -38,9 +38,7 @@ function resetDummyCondition() {
 }
 
 // ---------- Screen effects ----------
-let shake = 0,
-  flash = 0,
-  swingT = 0;
+const screenFx = { shake: 0, flash: 0, swingT: 0 };
 
 // ---------- Things in the room ----------
 const particles = [],
@@ -154,7 +152,7 @@ function damage(p, amount, kind = 'impact') {
   pain += amount;
   hurtT = 35;
   bodyFlash = 1;
-  shake = Math.min(30, shake + amount * 0.5);
+  screenFx.shake = Math.min(30, screenFx.shake + amount * 0.5);
   if (earned > 0) addText(p.x + rand(-10, 10), p.y - p.r - 10, '+' + earned + ' 🪙', '#ffd23f', 18);
   if (amount >= 6) burst(p.x, p.y, Math.min(12, 2 + amount / 4), 'star', { speed: 6, life: 35, size: 7 });
   if (amount >= 10 && Math.random() < 0.7) {
@@ -178,9 +176,9 @@ function stepTimers(now) {
   pain = Math.max(0, pain * 0.996 - 0.25);
   if (hurtT > 0) hurtT--;
   bodyFlash *= 0.85;
-  flash *= 0.88;
-  swingT *= 0.8;
-  shake = shake < 0.3 ? 0 : shake * 0.85;
+  screenFx.flash *= 0.88;
+  screenFx.swingT *= 0.8;
+  screenFx.shake = screenFx.shake < 0.3 ? 0 : screenFx.shake * 0.85;
   if (speech && ++speech.t > 120) speech = null;
 
   const dizzy = isDizzy();

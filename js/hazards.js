@@ -110,8 +110,8 @@ function explode(b, R = 280, F = 42, kind = 'bomb') {
     56 * Math.sqrt(scale),
     rand(-0.2, 0.2),
   );
-  shake = 35 * scale;
-  flash = Math.min(1, 0.8 * scale);
+  screenFx.shake = 35 * scale;
+  screenFx.flash = Math.min(1, 0.8 * scale);
   sfx.boom();
 }
 
@@ -149,14 +149,14 @@ function stepPianos(fy) {
         }
         damage(B.head, rand(50, 65), 'piano');
         sfx.piano();
-        shake = 30;
+        screenFx.shake = 30;
       }
     }
     if (!pn.landed && pn.y + pn.h / 2 >= fy) {
       pn.y = fy - pn.h / 2;
       pn.landed = 1;
       sfx.piano();
-      shake = Math.max(shake, 15);
+      screenFx.shake = Math.max(screenFx.shake, 15);
       burst(pn.x, fy - 10, 20, 'debris', { speed: 10, life: 60, size: 6, up: 5 });
       burst(pn.x, fy - 10, 10, 'smoke', { speed: 3, life: 60, size: 14 });
     }
@@ -289,7 +289,7 @@ function stepCouches(fy) {
       if (!c.landed) {
         c.landed = 1;
         sfx.thud();
-        shake = Math.max(shake, 18);
+        screenFx.shake = Math.max(screenFx.shake, 18);
         burst(c.x, fy - 5, 12, 'smoke', { speed: 3, life: 50, size: 12 });
       }
       c.vy *= -0.25;

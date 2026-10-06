@@ -30,7 +30,7 @@ function setTool(id) {
 }
 
 function useTool() {
-  swingT = 1;
+  screenFx.swingT = 1;
   TOOLS.find((t) => t.id === tool).use();
 }
 

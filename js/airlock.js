@@ -112,7 +112,7 @@ function suckTowardHatch(o) {
       color: '#fff',
     });
   }
-  shake = Math.max(shake, 4 * o);
+  screenFx.shake = Math.max(screenFx.shake, 4 * o);
 }
 
 const airlockBtn = document.getElementById('airlockBtn');
