@@ -2,6 +2,13 @@
 
 import { pick, rand } from './canvas.ts';
 
+declare global {
+  interface Window {
+    // Older Safari only has the prefixed constructor
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 let AC = null,
   noiseBuf = null,
   muted = false,
@@ -29,7 +36,7 @@ function envelope(g, t, peak, dur) {
   g.gain.exponentialRampToValueAtTime(peak, t + 0.005);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
 }
-function noise(dur, type, freq, peak, freqEnd) {
+function noise(dur, type, freq, peak, freqEnd?: number) {
   const a = ac();
   if (!a || muted) return;
   const t = a.currentTime;
