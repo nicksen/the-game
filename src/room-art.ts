@@ -3,7 +3,7 @@
 import { H, W, box, circle, ctx, rr, seg, star } from './canvas.ts';
 import { drawHatch } from './airlock.ts';
 
-export function drawWallPattern(type, fy) {
+export function drawWallPattern(type: string, fy: number) {
   ctx.save();
   if (type === 'stripes') {
     ctx.fillStyle = 'rgba(255,255,255,0.05)';
@@ -42,7 +42,7 @@ export function drawWallPattern(type, fy) {
   ctx.restore();
 }
 
-export function drawFloorPattern(type, fy) {
+export function drawFloorPattern(type: string, fy: number) {
   ctx.save();
   if (type === 'planks') {
     ctx.strokeStyle = 'rgba(0,0,0,0.18)';
@@ -88,7 +88,7 @@ export function drawFloorPattern(type, fy) {
   ctx.restore();
 }
 
-function windowFrame(x, y, w, h, sky) {
+function windowFrame(x: number, y: number, w: number, h: number, sky: CanvasGradient) {
   ctx.fillStyle = sky;
   ctx.fillRect(x - w / 2, y, w, h);
   ctx.strokeStyle = '#f5f0e6';
@@ -99,7 +99,7 @@ function windowFrame(x, y, w, h, sky) {
   seg(x - w / 2, y + h / 2, x + w / 2, y + h / 2);
 }
 
-export function decorLiving(fy) {
+export function decorLiving(fy: number) {
   // Window with curtains
   const wx = W * 0.16,
     wy = fy * 0.16,
@@ -150,7 +150,7 @@ export function decorLiving(fy) {
   ctx.fill();
 }
 
-export function rugLiving(fy) {
+export function rugLiving(fy: number) {
   ctx.fillStyle = '#9c2f3f';
   ctx.beginPath();
   ctx.ellipse(W / 2, fy + 38, 280, 30, 0, 0, Math.PI * 2);
@@ -162,7 +162,7 @@ export function rugLiving(fy) {
   ctx.stroke();
 }
 
-export function decorOffice(fy) {
+export function decorOffice(fy: number) {
   // Window with blinds
   const wx = W * 0.2,
     wy = fy * 0.14,
@@ -183,7 +183,7 @@ export function decorOffice(fy) {
   ctx.strokeStyle = '#222';
   ctx.lineWidth = 5;
   ctx.stroke();
-  const hand = (a, l, w) => {
+  const hand = (a: number, l: number, w: number) => {
     ctx.lineWidth = w;
     seg(cx, cy, cx + Math.sin(a) * l, cy - Math.cos(a) * l);
   };
@@ -208,7 +208,7 @@ export function decorOffice(fy) {
   ctx.fillText('NO GAIN', px, py + 12);
 }
 
-export function decorKitchen(fy) {
+export function decorKitchen(fy: number) {
   // Window above the sink
   const sx = W * 0.74;
   const sky = ctx.createLinearGradient(0, fy - 330, 0, fy - 210);
@@ -251,7 +251,7 @@ export function decorKitchen(fy) {
   box(tx + 6, fy - 140, 10, 5, '#333', null);
 }
 
-export function decorGarage(fy) {
+export function decorGarage(fy: number) {
   // Roll-up door
   const dw = Math.min(W * 0.32, 380),
     dtop = fy - 300;
@@ -309,7 +309,7 @@ export function decorGarage(fy) {
   box(px + 4, py + 26, 18, 30, '#c0392b', null);
 }
 
-export function garageFloor(fy) {
+export function garageFloor(fy: number) {
   ctx.fillStyle = 'rgba(20,20,30,0.35)';
   ctx.beginPath();
   ctx.ellipse(W * 0.36, fy + 45, 70, 14, 0.1, 0, Math.PI * 2);
@@ -318,7 +318,7 @@ export function garageFloor(fy) {
   for (let x = 0; x < W; x += 90) ctx.fillRect(x, fy + 70, 50, 6);
 }
 
-export function decorBedroom(fy) {
+export function decorBedroom(fy: number) {
   // Night window with moon and stars
   const wx = W * 0.2,
     wy = fy * 0.16,
@@ -360,7 +360,7 @@ export function decorBedroom(fy) {
   ctx.fill();
 }
 
-export function rugBedroom(fy) {
+export function rugBedroom(fy: number) {
   ctx.fillStyle = '#f2d4e0';
   ctx.beginPath();
   ctx.ellipse(W / 2, fy + 38, 220, 28, 0, 0, Math.PI * 2);
@@ -374,12 +374,12 @@ export function rugBedroom(fy) {
   ctx.setLineDash([]);
 }
 
-export function decorSpace(fy) {
+export function decorSpace(fy: number) {
   // Ringed planet
   const px = W * 0.78,
     py = fy * 0.36,
     pr = Math.min(W, fy) * 0.17;
-  const ring = (start, end) => {
+  const ring = (start: number, end: number) => {
     ctx.beginPath();
     ctx.ellipse(px, py, pr * 1.9, pr * 0.42, -0.35, start, end);
     ctx.strokeStyle = 'rgba(240,200,140,0.85)';
@@ -442,7 +442,7 @@ export function decorSpace(fy) {
   drawHatch();
 }
 
-export function spaceFloor(fy) {
+export function spaceFloor(fy: number) {
   // Hazard stripes along the edge of the deck and a glowing guide light
   ctx.save();
   ctx.beginPath();
