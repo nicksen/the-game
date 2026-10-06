@@ -34,8 +34,7 @@ const PROPS = {
   ],
 };
 
-let props = [],
-  heldProp = null;
+let props = [];
 
 // Specs give a floor position by default; `y`, `vx`, `vy`, `a` and `va` override the resting start.
 function makeProp(spec) {

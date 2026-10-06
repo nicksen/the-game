@@ -3,7 +3,20 @@
 
 // ---------- Input ----------
 const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
-let drag = null;
+let drag = null,
+  heldProp = null;
+function startDrag(p) {
+  drag = p;
+}
+function endDrag() {
+  drag = null;
+}
+function holdProp(pr) {
+  heldProp = pr;
+}
+function dropProp() {
+  heldProp = null;
+}
 
 // ---------- How the dummy is doing ----------
 const DIZZY_PAIN = 70;

@@ -120,7 +120,7 @@ window.addEventListener('pointerup', () => {
   if (drag) {
     drag.px = drag.x - pointer.vx;
     drag.py = drag.y - pointer.vy;
-    drag = null;
+    endDrag();
     resetCursor();
   }
   if (heldProp) {
@@ -130,7 +130,7 @@ window.addEventListener('pointerup', () => {
     heldProp.vx = clamp(pointer.vx);
     heldProp.vy = clamp(pointer.vy);
     heldProp.va = (pointer.vx * 0.012) / heldProp.mass;
-    heldProp = null;
+    dropProp();
     resetCursor();
   }
 });

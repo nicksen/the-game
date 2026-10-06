@@ -54,13 +54,13 @@ function nearestPoint(x, y) {
 function grab() {
   const { p, d } = nearestPoint(pointer.x, pointer.y);
   if (p && d < 30) {
-    drag = p;
+    startDrag(p);
     canvas.style.cursor = 'grabbing';
     if (Math.random() < 0.5) say(LINES.grab);
   } else {
     const pr = [...props].reverse().find((o) => inProp(o, pointer.x, pointer.y, 6));
     if (pr) {
-      heldProp = pr;
+      holdProp(pr);
       pr.gx = pr.x - pointer.x;
       pr.gy = pr.y - pointer.y;
       canvas.style.cursor = 'grabbing';

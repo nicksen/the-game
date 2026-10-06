@@ -45,11 +45,11 @@ function loop(now) {
 function resetScene() {
   buildDummy();
   buildProps();
-  heldProp = null;
+  dropProp();
   pain = 0;
   sessionDmg = 0;
   hurtT = 0;
-  drag = null;
+  endDrag();
   bombs.length = 0;
   pianos.length = 0;
   projectiles.length = 0;
