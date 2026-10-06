@@ -1,12 +1,12 @@
 // Drawing the dummy in its different looks
 
-import { OUT, RED, YEL, blob, chain, circle, ctx, joint, mix, rr, seg, star } from './canvas.ts';
+import { OUT, RED, YEL, blob, chain, circle, ctx, joint, mix, rr, seg, star, type Rgb } from './canvas.ts';
 import { save } from './save.ts';
 import { bodyFlash, hurtT, idle, isDizzy, pointer, sessionDmg } from './state.ts';
-import { B, blinkT, idling } from './dummy.ts';
+import { B, blinkT, idling, type Point } from './dummy.ts';
 
 // Crash-test-dummy target marker
-function marker(x, y, r) {
+function marker(x: number, y: number, r: number) {
   circle(x, y, r);
   ctx.fillStyle = '#ffe14d';
   ctx.fill();
@@ -27,7 +27,15 @@ function marker(x, y, r) {
   ctx.stroke();
 }
 
-export const LOOKS = {
+type BodyColor = 'arm' | 'leg' | 'torso' | 'hand' | 'foot' | 'head';
+interface Look extends Record<BodyColor, Rgb> {
+  name: string;
+  icon: string;
+  armW: number;
+  legW: number;
+}
+
+export const LOOKS: Record<string, Look> = {
   dummy: {
     name: 'Crash Dummy',
     icon: '🟡',
@@ -54,15 +62,15 @@ export const LOOKS = {
   },
 };
 export let lookId = save.look && LOOKS[save.look] ? save.look : 'dummy';
-export function chooseLook(id) {
+export function chooseLook(id: string) {
   lookId = save.look = id;
 }
-const shadeRGB = (c) => c.map((v) => v * 0.84);
+const shadeRGB = (c: Rgb): Rgb => [c[0] * 0.84, c[1] * 0.84, c[2] * 0.84];
 
 export function drawDummy() {
   const look = LOOKS[lookId],
     t = bodyFlash * 0.7;
-  const c = (part, back = false) => mix(back ? shadeRGB(look[part]) : look[part], RED, t);
+  const c = (part: BodyColor, back = false) => mix(back ? shadeRGB(look[part]) : look[part], RED, t);
   const n = B.neck,
     pv = B.pelvis;
   const dx = pv.x - n.x,
@@ -72,8 +80,8 @@ export function drawDummy() {
     uy = dy / L,
     nx = -uy,
     ny = ux;
-  const shoulder = (side) => ({ x: n.x + nx * 18 * side + ux * 6, y: n.y + ny * 18 * side + uy * 6 });
-  const hip = (side) => ({ x: pv.x + nx * 10 * side, y: pv.y + ny * 10 * side });
+  const shoulder = (side: number) => ({ x: n.x + nx * 18 * side + ux * 6, y: n.y + ny * 18 * side + uy * 6 });
+  const hip = (side: number) => ({ x: pv.x + nx * 10 * side, y: pv.y + ny * 10 * side });
 
   // Back limbs
   chain([shoulder(-1), B.rElbow, B.rHand], look.armW, c('arm', true));
@@ -101,7 +109,7 @@ export function drawDummy() {
   ctx.lineWidth = 5;
   ctx.stroke();
 
-  const at = (f, side = 0) => ({ x: n.x + dx * f + nx * side, y: n.y + dy * f + ny * side });
+  const at = (f: number, side = 0) => ({ x: n.x + dx * f + nx * side, y: n.y + dy * f + ny * side });
   if (lookId === 'suit') {
     // Shirt V, tie, lapels and a button
     const vl = at(-0.12, 11),
@@ -158,7 +166,7 @@ export function drawDummy() {
 }
 
 // Drawn in head-local coordinates, rotated so "up" points away from the neck.
-function drawHead(col) {
+function drawHead(col: string) {
   const h = B.head,
     n = B.neck,
     r = h.r,
@@ -195,7 +203,7 @@ const HAIR = '#7a4a2a',
   HAIR_D = '#4a2c18';
 
 // Back of the hair, down to about ear level
-function drawHairBack(r) {
+function drawHairBack(r: number) {
   rr(-r - 4, -r - 4, r * 2 + 8, r + 12, 12);
   ctx.fillStyle = HAIR;
   ctx.fill();
@@ -205,7 +213,7 @@ function drawHairBack(r) {
 }
 
 // Top of the hair with side-swept bangs
-function drawHairFront(r) {
+function drawHairFront(r: number) {
   ctx.beginPath();
   ctx.arc(0, 0, r + 3, Math.PI * 0.97, Math.PI * 2.03);
   ctx.lineTo(r - 4, 2);
@@ -294,7 +302,7 @@ function drawHurtFace() {
 }
 
 // Smiling, blinking, yawning, and eyes that follow the pointer or wander while idling
-function drawCalmFace(h, ang) {
+function drawCalmFace(h: Point, ang: number) {
   const yawning = idling && idle.action === 'stretch' && idle.t > 20 && idle.t < idle.dur - 20;
   if (yawning || blinkT > 0) {
     ctx.lineWidth = 3;
@@ -344,7 +352,7 @@ function drawCalmFace(h, ang) {
   }
 }
 
-function drawCirclingStars(h) {
+function drawCirclingStars(h: Point) {
   for (let i = 0; i < 3; i++) {
     const a = performance.now() / 300 + (i * Math.PI * 2) / 3;
     star(h.x + Math.cos(a) * 36, h.y - 30 + Math.sin(a) * 8, 7, a);
