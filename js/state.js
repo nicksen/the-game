@@ -2,7 +2,6 @@
 // Shared game state, the dummy's dialogue, and damage/coin bookkeeping
 
 // ---------- Input ----------
-let tool = 'punch';
 const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
 let drag = null;
 

@@ -24,6 +24,10 @@ const TOOLS = [
   { id: 'vikings', icon: '⚔️', name: 'Vikings', price: 900, key: 'v', use: spawnVikings, earthOnly: true },
   { id: 'meteor', icon: '☄️', name: 'Meteor', price: 1200, key: '=', use: dropMeteor },
 ];
+let tool = 'punch';
+function setTool(id) {
+  tool = id;
+}
 
 function useTool() {
   swingT = 1;

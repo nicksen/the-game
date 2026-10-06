@@ -79,7 +79,7 @@ function selectTool(t, el) {
       return;
     }
   }
-  tool = t.id;
+  setTool(t.id);
   resetCursor();
   renderTools();
 }
@@ -198,7 +198,7 @@ function chooseRoom(id) {
   persist();
   menuEl.classList.add('hidden');
   resetScene();
-  if (offHere(TOOLS.find((t) => t.id === tool))) tool = 'punch';
+  if (offHere(TOOLS.find((t) => t.id === tool))) setTool('punch');
   renderTools();
   say([`Ooh, the ${currentRoom().name.toLowerCase()}! Please be gentle.`], true);
 }
