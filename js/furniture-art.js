@@ -299,7 +299,7 @@ export function drawOxygenTank(w, h) {
   seg(0, 18, 5, 13);
 }
 
-export function drawHelmet(w, h) {
+export function drawHelmet(w) {
   const r = w / 2;
   circle(0, 0, r);
   ctx.fillStyle = '#f4f4f4';
