@@ -87,19 +87,18 @@ function drawRoom() {
   room.decor(fy);
 }
 
-// Render a room preview into a small canvas by temporarily redirecting the drawing globals
+// Render a room preview into a small canvas
 function renderThumb(room, cv) {
   const tw = 248,
     th = 160;
   cv.width = tw;
   cv.height = th;
-  const saved = [ctx, W, H, roomId];
-  ctx = cv.getContext('2d');
-  W = 1000;
-  H = (1000 * th) / tw;
+  const savedRoomId = roomId;
   roomId = room.id;
-  ctx.setTransform(tw / W, 0, 0, tw / W, 0, 0);
-  drawRoom();
-  for (const spec of PROPS[room.id]()) drawProp(makeProp(spec));
-  [ctx, W, H, roomId] = saved;
+  drawingInto(cv.getContext('2d'), 1000, (1000 * th) / tw, () => {
+    ctx.setTransform(tw / W, 0, 0, tw / W, 0, 0);
+    drawRoom();
+    for (const spec of PROPS[room.id]()) drawProp(makeProp(spec));
+  });
+  roomId = savedRoomId;
 }

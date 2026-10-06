@@ -16,6 +16,15 @@ function resize() {
   canvas.style.height = H + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+// Points the drawing globals at another canvas for the length of `draw`
+function drawingInto(context, width, height, draw) {
+  const saved = [ctx, W, H];
+  ctx = context;
+  W = width;
+  H = height;
+  draw();
+  [ctx, W, H] = saved;
+}
 const floorY = () => H - 110;
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
