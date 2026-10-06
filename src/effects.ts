@@ -6,6 +6,36 @@ import { phys } from './physics.ts';
 import { particles, texts } from './state.ts';
 
 // ---------- Particles ----------
+type ParticleKind = 'star' | 'feather' | 'smoke' | 'fire' | 'debris' | 'drop' | 'wind';
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  max: number;
+  type: ParticleKind;
+  size: number;
+  rot: number;
+  vr: number;
+  color: string;
+}
+interface TextSprite {
+  image: HTMLCanvasElement;
+  left: number;
+  top: number;
+  w: number;
+  h: number;
+}
+export interface FloatingText {
+  x: number;
+  y: number;
+  rot: number;
+  life: number;
+  max: number;
+  sprite: TextSprite;
+}
+
 interface BurstOptions {
   speed?: number;
   // Extra upward kick on top of the random direction
@@ -14,7 +44,7 @@ interface BurstOptions {
   size?: number;
   color?: string;
 }
-export function burst(x, y, n, type, o: BurstOptions = {}) {
+export function burst(x, y, n, type: ParticleKind, o: BurstOptions = {}) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2,
       s = (o.speed || 5) * rand(0.3, 1.3);
@@ -155,7 +185,7 @@ export function addText(x, y, text, color, size, rot = 0) {
 // Outlined text is slow to draw (it can't use the browser's glyph cache), and redrawing every live text each
 // frame stutters on phones. So each text is drawn once into its own canvas, at its biggest pop size and the
 // screen's pixel density, and that image is what gets scaled and rotated every frame.
-function textSprite(text, color, size) {
+function textSprite(text, color, size): TextSprite {
   const c = document.createElement('canvas'),
     g = context2d(c);
   const font = `900 ${size}px Impact, "Arial Black", sans-serif`,

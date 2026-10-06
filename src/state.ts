@@ -6,6 +6,9 @@ import { zeroG } from './physics.ts';
 import { addText, burst } from './effects.ts';
 import { AIRLOCK, airlock } from './airlock.ts';
 import { updateHud } from './ui.ts';
+import type { FloatingText, Particle } from './effects.ts';
+import type { Bomb, Couch, Piano, Projectile } from './hazards.ts';
+import type { Viking } from './vikings.ts';
 
 // ---------- Input ----------
 export const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };
@@ -47,13 +50,13 @@ export function resetDummyCondition() {
 export const screenFx = { shake: 0, flash: 0, swingT: 0 };
 
 // ---------- Things in the room ----------
-export const particles = [],
-  texts = [],
-  bombs = [],
-  pianos = [],
-  projectiles = [],
-  couches = [],
-  vikings = [];
+export const particles: Particle[] = [],
+  texts: FloatingText[] = [],
+  bombs: Bomb[] = [],
+  pianos: Piano[] = [],
+  projectiles: Projectile[] = [],
+  couches: Couch[] = [],
+  vikings: Viking[] = [];
 
 // ---------- Dialogue ----------
 export const LINES = {

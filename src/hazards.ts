@@ -10,6 +10,13 @@ import { props } from './furniture.ts';
 import { nearestPoint } from './tools.ts';
 
 // ---------- Bombs ----------
+export interface Bomb {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  fuse: number;
+}
 export function dropBomb() {
   bombs.push({
     x: pointer.x,
@@ -124,6 +131,16 @@ function explode(b, R = 280, F = 42, kind = 'bomb') {
 }
 
 // ---------- Pianos ----------
+export interface Piano {
+  x: number;
+  y: number;
+  vy: number;
+  w: number;
+  h: number;
+  hit: boolean;
+  landed: number;
+  alpha: number;
+}
 export function dropPiano() {
   // Without gravity to speed it up, the piano gets a harder shove
   pianos.push({ x: pointer.x, y: -120, vy: zeroG() ? 10 : 2, w: 150, h: 100, hit: false, landed: 0, alpha: 1 });
@@ -222,6 +239,19 @@ export function drawPianos() {
 }
 
 // ---------- Couches ----------
+export interface Couch {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  g: number;
+  rot: number;
+  vr: number;
+  hit: boolean;
+  landed: number;
+  alpha: number;
+  age: number;
+}
 export function throwCouch() {
   // Heaved in from the nearest side, tumbling end over end
   const sx = pointer.x < W / 2 ? -90 : W + 90,
@@ -348,7 +378,21 @@ export function drawCouches() {
 }
 
 // ---------- Projectiles: tomatoes, rockets and meteors ----------
-function launch(type, sx, sy, vx, vy, g, r, extra = {}) {
+type ProjectileKind = 'tomato' | 'rocket' | 'meteor';
+export interface Projectile {
+  type: ProjectileKind;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  g: number;
+  r: number;
+  age: number;
+  rot: number;
+  // Where a meteor is headed
+  tx?: number;
+}
+function launch(type: ProjectileKind, sx, sy, vx, vy, g, r, extra: Pick<Projectile, 'tx'> = {}) {
   projectiles.push({ type, x: sx, y: sy, vx, vy, g, r, age: 0, rot: 0, ...extra });
 }
 

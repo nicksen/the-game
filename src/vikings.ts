@@ -9,6 +9,21 @@ import { points } from './dummy.ts';
 const HORDE_SIZE = 8,
   MAX_VIKINGS = 30;
 
+export interface Viking {
+  x: number;
+  dir: number;
+  speed: number;
+  phase: number;
+  depth: number;
+  scale: number;
+  weapon: string;
+  tunic: string;
+  beard: string;
+  shield: string;
+  swing: number;
+  hit: boolean;
+}
+
 // A horde charges in from the edge nearest the click and runs across the floor
 export function spawnVikings() {
   const dir = pointer.x < W / 2 ? 1 : -1,
