@@ -378,9 +378,7 @@ export function drawCouches() {
 }
 
 // ---------- Projectiles: tomatoes, rockets and meteors ----------
-type ProjectileKind = 'tomato' | 'rocket' | 'meteor';
-export interface Projectile {
-  type: ProjectileKind;
+interface Flying {
   x: number;
   y: number;
   vx: number;
@@ -389,11 +387,11 @@ export interface Projectile {
   r: number;
   age: number;
   rot: number;
-  // Where a meteor is headed
-  tx?: number;
 }
-function launch(type: ProjectileKind, sx, sy, vx, vy, g, r, extra: Pick<Projectile, 'tx'> = {}) {
-  projectiles.push({ type, x: sx, y: sy, vx, vy, g, r, age: 0, rot: 0, ...extra });
+// A meteor also knows where on the floor it's headed
+export type Projectile = Flying & ({ type: 'tomato' | 'rocket' } | { type: 'meteor'; tx: number });
+function flying(x, y, vx, vy, g, r): Flying {
+  return { x, y, vx, vy, g, r, age: 0, rot: 0 };
 }
 
 export function throwTomato() {
@@ -402,14 +400,17 @@ export function throwTomato() {
     sy = floorY() - 160,
     g = 0.4 * phys().g;
   const T = Math.max(20, Math.hypot(pointer.x - sx, pointer.y - sy) / 18);
-  launch('tomato', sx, sy, (pointer.x - sx) / T, (pointer.y - sy) / T - 0.5 * g * T, g, 10);
+  projectiles.push({
+    type: 'tomato',
+    ...flying(sx, sy, (pointer.x - sx) / T, (pointer.y - sy) / T - 0.5 * g * T, g, 10),
+  });
   sfx.swoosh();
 }
 
 export function fireRocket() {
   // Fired from the far side of the room at the click height
   const fromLeft = pointer.x > W / 2;
-  launch('rocket', fromLeft ? -40 : W + 40, pointer.y, fromLeft ? 20 : -20, 0, 0, 10);
+  projectiles.push({ type: 'rocket', ...flying(fromLeft ? -40 : W + 40, pointer.y, fromLeft ? 20 : -20, 0, 0, 10) });
   sfx.rocket();
 }
 
@@ -419,7 +420,7 @@ export function dropMeteor() {
     sx = tx + (tx < W / 2 ? 350 : -350),
     sy = -120;
   const m = Math.hypot(tx - sx, ty - sy);
-  launch('meteor', sx, sy, ((tx - sx) / m) * 16, ((ty - sy) / m) * 16, 0, 26, { tx });
+  projectiles.push({ type: 'meteor', tx, ...flying(sx, sy, ((tx - sx) / m) * 16, ((ty - sy) / m) * 16, 0, 26) });
   sfx.meteor();
 }
 
