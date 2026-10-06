@@ -23,15 +23,15 @@ export function updateHud() {
 const comboEl = byId('combo', HTMLElement);
 export function updateCombo() {
   const showCombo = combo >= 3 && performance.now() - lastHit < 1300;
-  comboEl.style.opacity = showCombo ? 1 : 0;
+  comboEl.style.opacity = showCombo ? '1' : '0';
   if (showCombo) comboEl.textContent = `x${combo} COMBO!`;
 }
 
 function toast(msg) {
   toastEl.textContent = msg;
-  toastEl.style.opacity = 1;
+  toastEl.style.opacity = '1';
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (toastEl.style.opacity = 0), 1400);
+  toastTimer = setTimeout(() => (toastEl.style.opacity = '0'), 1400);
 }
 
 const muteBtn = byId('mute', HTMLButtonElement);

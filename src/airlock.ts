@@ -127,7 +127,7 @@ export function updateAirlockBtn() {
   airlockBtn.style.display = zeroG() ? '' : 'none';
   airlockBtn.disabled = airlock.t >= 0 || airlock.cooldown > 0;
   // Show the seconds left while recharging
-  airlockBtn.textContent = airlock.cooldown > 0 ? Math.ceil(airlock.cooldown / 60) : '🚪';
+  airlockBtn.textContent = airlock.cooldown > 0 ? String(Math.ceil(airlock.cooldown / 60)) : '🚪';
 }
 airlockBtn.onclick = () => {
   ac();
