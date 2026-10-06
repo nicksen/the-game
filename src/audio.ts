@@ -33,12 +33,12 @@ export function ac() {
   if (AC.state === 'suspended') AC.resume();
   return AC;
 }
-function envelope(g, t, peak, dur) {
+function envelope(g: GainNode, t: number, peak: number, dur: number) {
   g.gain.setValueAtTime(0.0001, t);
   g.gain.exponentialRampToValueAtTime(peak, t + 0.005);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
 }
-function noise(dur, type, freq, peak, freqEnd?: number) {
+function noise(dur: number, type: BiquadFilterType, freq: number, peak: number, freqEnd?: number) {
   const a = ac();
   if (!a || muted) return;
   const t = a.currentTime;
@@ -54,7 +54,7 @@ function noise(dur, type, freq, peak, freqEnd?: number) {
   src.start(t);
   src.stop(t + dur + 0.05);
 }
-function tone(type, f0, f1, dur, peak, delay = 0) {
+function tone(type: OscillatorType, f0: number, f1: number | null, dur: number, peak: number, delay = 0) {
   const a = ac();
   if (!a || muted) return;
   const t = a.currentTime + delay;
@@ -69,7 +69,7 @@ function tone(type, f0, f1, dur, peak, delay = 0) {
   o.stop(t + dur + 0.05);
 }
 export const sfx = {
-  hit(i) {
+  hit(i: number) {
     const now = performance.now();
     if (now - lastHitSound < 45) return;
     lastHitSound = now;

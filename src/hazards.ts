@@ -28,7 +28,7 @@ export function dropBomb() {
   sfx.tick();
 }
 
-export function stepBombs(fy) {
+export function stepBombs(fy: number) {
   const g = phys().g;
   for (let i = bombs.length - 1; i >= 0; i--) {
     const b = bombs[i];
@@ -147,7 +147,7 @@ export function dropPiano() {
   sfx.swoosh();
 }
 
-export function stepPianos(fy) {
+export function stepPianos(fy: number) {
   const g = phys().g;
   for (let i = pianos.length - 1; i >= 0; i--) {
     const pn = pianos[i];
@@ -275,7 +275,7 @@ export function throwCouch() {
   sfx.swoosh();
 }
 
-export function stepCouches(fy) {
+export function stepCouches(fy: number) {
   for (let i = couches.length - 1; i >= 0; i--) {
     const c = couches[i];
     c.age++;
@@ -284,7 +284,7 @@ export function stepCouches(fy) {
     c.y += c.vy;
     c.rot += c.vr;
     if (!c.hit) {
-      const inBox = (p) => Math.abs(p.x - c.x) < 75 + p.r && Math.abs(p.y - c.y) < 35 + p.r;
+      const inBox = (p: Point) => Math.abs(p.x - c.x) < 75 + p.r && Math.abs(p.y - c.y) < 35 + p.r;
       if (points.some(inBox)) {
         c.hit = true;
         let closest = B.pelvis,
@@ -390,7 +390,7 @@ interface Flying {
 }
 // A meteor also knows where on the floor it's headed
 export type Projectile = Flying & ({ type: 'tomato' | 'rocket' } | { type: 'meteor'; tx: number });
-function flying(x, y, vx, vy, g, r): Flying {
+function flying(x: number, y: number, vx: number, vy: number, g: number, r: number): Flying {
   return { x, y, vx, vy, g, r, age: 0, rot: 0 };
 }
 
@@ -424,7 +424,7 @@ export function dropMeteor() {
   sfx.meteor();
 }
 
-export function stepProjectiles(fy) {
+export function stepProjectiles(fy: number) {
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const pr = projectiles[i];
     pr.vy += pr.g;
@@ -453,7 +453,7 @@ export function stepProjectiles(fy) {
   }
 }
 
-function projectileHit(pr, p) {
+function projectileHit(pr: Projectile, p: Point | undefined) {
   switch (pr.type) {
     case 'tomato':
       if (p) {

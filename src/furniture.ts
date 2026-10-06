@@ -111,7 +111,7 @@ export function buildProps() {
   props = (PROPS[roomId] || (() => []))().map(makeProp);
 }
 
-function propCorners(p) {
+function propCorners(p: Prop) {
   const c = Math.cos(p.a),
     s = Math.sin(p.a);
   return [
@@ -125,7 +125,7 @@ function propCorners(p) {
   }));
 }
 // Is (x, y) inside the rotated prop, grown by `pad`?
-export function inProp(p, x, y, pad = 0) {
+export function inProp(p: Prop, x: number, y: number, pad = 0) {
   const c = Math.cos(-p.a),
     s = Math.sin(-p.a),
     dx = x - p.x,
@@ -135,7 +135,7 @@ export function inProp(p, x, y, pad = 0) {
   return Math.abs(lx) < p.w / 2 + pad && Math.abs(ly) < p.h / 2 + pad;
 }
 
-export function stepProps(fy) {
+export function stepProps(fy: number) {
   const g = phys().g,
     space = g === 0;
   for (const p of props) {
@@ -148,7 +148,7 @@ export function stepProps(fy) {
 }
 
 // A held prop follows the pointer, tilting with its motion; a free one flies and spins.
-function moveProp(p, g) {
+function moveProp(p: Prop, g: number) {
   if (p === heldProp) {
     const tx = pointer.x + p.gx,
       ty = pointer.y + p.gy;
@@ -169,7 +169,7 @@ function moveProp(p, g) {
 }
 
 // Bounce off the floor, ceiling and walls using the rotated corners.
-function keepPropInRoom(p, fy, space) {
+function keepPropInRoom(p: Prop, fy: number, space: boolean) {
   const cs = propCorners(p);
   const maxY = Math.max(...cs.map((c) => c.y)),
     minY = Math.min(...cs.map((c) => c.y));
@@ -214,7 +214,7 @@ function keepPropInRoom(p, fy, space) {
 }
 
 // A fast-moving prop smacks the dummy, harder the heavier it is.
-function propHitDummy(p) {
+function propHitDummy(p: Prop) {
   const speed = Math.hypot(p.vx, p.vy);
   if (speed <= 6 || p.cd !== 0) return;
   const hit = points.find((q) => inProp(p, q.x, q.y, q.r));
@@ -242,7 +242,7 @@ function propHitDummy(p) {
   }
 }
 
-export function drawProp(p) {
+export function drawProp(p: Prop) {
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(p.a);
@@ -250,4 +250,4 @@ export function drawProp(p) {
   ctx.restore();
 }
 // Moving props are drawn in front of the dummy
-export const propMoving = (p) => p === heldProp || Math.hypot(p.vx, p.vy) > 2;
+export const propMoving = (p: Prop) => p === heldProp || Math.hypot(p.vx, p.vy) > 2;
