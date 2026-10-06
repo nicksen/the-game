@@ -9,8 +9,8 @@ declare global {
   }
 }
 
-let AC = null,
-  noiseBuf = null,
+let AC: AudioContext | null = null,
+  noiseBuf: AudioBuffer | null = null,
   muted = false,
   lastHitSound = 0;
 export function toggleMute() {
@@ -19,12 +19,14 @@ export function toggleMute() {
 }
 export function ac() {
   if (!AC) {
+    let context: AudioContext;
     try {
-      AC = new (window.AudioContext || window.webkitAudioContext)();
+      context = new (window.AudioContext || window.webkitAudioContext)();
     } catch {
       return null;
     }
-    noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+    AC = context;
+    noiseBuf = context.createBuffer(1, context.sampleRate, context.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
