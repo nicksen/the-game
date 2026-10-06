@@ -60,7 +60,7 @@ run = "bunx prettier --check ."
 [tasks.typecheck]
 description = "Check the TypeScript types"
 depends = ["install"]
-run = "bunx tsc --noEmit"
+run = ["bunx tsc --noEmit", "bunx tsc --noEmit -p src"]
 
 [tasks.test]
 description = "Replay a scripted play session and compare it with the recorded baseline"
