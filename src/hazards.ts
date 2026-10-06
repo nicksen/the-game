@@ -558,7 +558,7 @@ export function drawBolt() {
   for (const [w, col] of [
     [7, 'rgba(140,210,255,0.6)'],
     [3, '#fff'],
-  ]) {
+  ] as const) {
     ctx.beginPath();
     let x = tx + rand(-80, 80),
       y = -10;

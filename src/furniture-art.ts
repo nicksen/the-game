@@ -134,7 +134,7 @@ export function drawFridge(w, h) {
     [-5, -175, '#f1c40f'],
     [-30, -120, '#3498db'],
     [5, -100, '#2ecc71'],
-  ]) {
+  ] as const) {
     circle(mx, F + my, 6);
     ctx.fillStyle = c;
     ctx.fill();
