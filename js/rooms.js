@@ -64,6 +64,9 @@ const ROOMS = [
 ];
 let roomId = ROOMS.some((r) => r.id === save.room) ? save.room : 'living';
 const currentRoom = () => ROOMS.find((r) => r.id === roomId);
+function enterRoom(id) {
+  roomId = save.room = id;
+}
 
 function drawRoom() {
   const fy = floorY(),

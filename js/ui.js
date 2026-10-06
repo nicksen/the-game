@@ -25,8 +25,7 @@ function toast(msg) {
 }
 
 document.getElementById('mute').onclick = (e) => {
-  muted = !muted;
-  e.currentTarget.textContent = muted ? '🔇' : '🔊';
+  e.currentTarget.textContent = toggleMute() ? '🔇' : '🔊';
 };
 document.getElementById('heal').onclick = () => {
   resetScene();
@@ -169,7 +168,7 @@ function renderLooks() {
     b.className = 'look' + (id === lookId ? ' current' : '');
     b.innerHTML = `<span>${look.icon}</span>${look.name}`;
     b.onclick = () => {
-      lookId = save.look = id;
+      chooseLook(id);
       persist();
       renderLooks();
     };
@@ -195,7 +194,7 @@ function renderRooms() {
 
 function chooseRoom(id) {
   ac();
-  roomId = save.room = id;
+  enterRoom(id);
   persist();
   menuEl.classList.add('hidden');
   resetScene();

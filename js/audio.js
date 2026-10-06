@@ -5,6 +5,10 @@ let AC = null,
   noiseBuf = null,
   muted = false,
   lastHitSound = 0;
+function toggleMute() {
+  muted = !muted;
+  return muted;
+}
 function ac() {
   if (!AC) {
     try {

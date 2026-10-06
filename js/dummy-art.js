@@ -50,6 +50,9 @@ const LOOKS = {
   },
 };
 let lookId = LOOKS[save.look] ? save.look : 'dummy';
+function chooseLook(id) {
+  lookId = save.look = id;
+}
 const shadeRGB = (c) => c.map((v) => v * 0.84);
 
 function drawDummy() {
