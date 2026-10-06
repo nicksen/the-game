@@ -33,7 +33,7 @@ function freezeTheWorld({ tools }) {
   performance.now = () => now;
   const RealDate = Date;
   window.Date = class extends RealDate {
-    constructor(...a) { a.length ? super(...a) : super(1.7e12 + now); }
+    constructor(...a) { if (a.length) super(...a); else super(1.7e12 + now); }
     static now() { return 1.7e12 + now; }
   };
   const frameCallbacks = [];

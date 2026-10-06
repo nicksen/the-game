@@ -4,7 +4,7 @@
 let AC = null, noiseBuf = null, muted = false, lastHitSound = 0;
 function ac() {
   if (!AC) {
-    try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch { return null; }
     noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;

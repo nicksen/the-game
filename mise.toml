@@ -28,6 +28,11 @@ run = [
 description = "Collect the game's files into _site/ for GitHub Pages"
 run = "bun tools/build-site.ts"
 
+[tasks.lint]
+description = "Check the code with oxlint"
+depends = ["install"]
+run = "bunx oxlint --deny-warnings"
+
 [tasks.test]
 description = "Replay a scripted play session and compare it with the recorded baseline"
 depends = ["install"]
