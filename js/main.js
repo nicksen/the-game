@@ -46,9 +46,7 @@ function resetScene() {
   buildDummy();
   buildProps();
   dropProp();
-  pain = 0;
-  sessionDmg = 0;
-  hurtT = 0;
+  resetDummyCondition();
   endDrag();
   bombs.length = 0;
   pianos.length = 0;

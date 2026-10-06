@@ -22,18 +22,20 @@ function dropProp() {
 const DIZZY_PAIN = 70;
 let pain = 0,
   hurtT = 0,
-  bodyFlash = 0,
-  standK = 0;
+  bodyFlash = 0;
 let combo = 0,
   lastHit = 0,
   lastIdle = performance.now(),
   sessionDmg = 0,
   wasDizzy = false;
-let idling = false,
-  blinkT = 0;
 const idle = { action: 'breathe', t: 0, dur: 200 };
 let speech = null;
 const isDizzy = () => pain > DIZZY_PAIN;
+function resetDummyCondition() {
+  pain = 0;
+  sessionDmg = 0;
+  hurtT = 0;
+}
 
 // ---------- Screen effects ----------
 let shake = 0,

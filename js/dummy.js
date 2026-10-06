@@ -3,6 +3,9 @@
 
 let points = [],
   sticks = [];
+let standK = 0,
+  idling = false,
+  blinkT = 0;
 const B = {};
 
 function buildDummy() {
