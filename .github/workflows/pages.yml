@@ -21,6 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
+      - name: Check the types
+        run: mise run typecheck
       - name: Lint the code
         run: mise run lint
       - name: Check the code is formatted
