@@ -23,6 +23,8 @@ jobs:
       - uses: jdx/mise-action@v5
       - name: Lint the code
         run: mise run lint
+      - name: Check the code is formatted
+        run: mise run format:check
       - name: Check the installable app works offline
         run: mise run test:pwa
       - name: Collect the game's files

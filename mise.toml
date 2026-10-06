@@ -33,6 +33,16 @@ description = "Check the code with oxlint"
 depends = ["install"]
 run = "bunx oxlint --deny-warnings"
 
+[tasks.format]
+description = "Format the code with prettier"
+depends = ["install"]
+run = "bunx prettier --write ."
+
+[tasks."format:check"]
+description = "Check the code is formatted with prettier"
+depends = ["install"]
+run = "bunx prettier --check ."
+
 [tasks.test]
 description = "Replay a scripted play session and compare it with the recorded baseline"
 depends = ["install"]

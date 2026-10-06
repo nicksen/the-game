@@ -1,0 +1,6 @@
+dist/
+_site/
+bun.lock
+mise.lock
+tests/replay-baseline.txt
+tests/replay-actual.txt
