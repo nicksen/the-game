@@ -7,13 +7,13 @@ run = "bun install --frozen-lockfile"
 
 [tasks.bundle]
 description = "Bundle the game's modules into build/game.js, the one script index.html loads"
-sources = ["js/*.js"]
+sources = ["src/*.ts"]
 outputs = ["build/game.js"]
-run = "bun build js/main.js --format=iife --outfile build/game.js"
+run = "bun build src/main.ts --format=iife --outfile build/game.js"
 
 [tasks.watch]
 description = "Rebuild build/game.js on every change, for playing from index.html while editing"
-run = "bun build js/main.js --format=iife --outfile build/game.js --watch"
+run = "bun build src/main.ts --format=iife --outfile build/game.js --watch"
 
 [tasks.start]
 description = "Play the game through the launcher, without compiling it"

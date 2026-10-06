@@ -1,14 +1,14 @@
 // The toolbar weapons and what each one does when you click
 
-import { canvas, rand } from './canvas.js';
-import { sfx } from './audio.js';
-import { zeroG } from './physics.js';
-import { LINES, damage, holdProp, pointer, say, screenFx, startDrag } from './state.js';
-import { burst } from './effects.js';
-import { B, points } from './dummy.js';
-import { inProp, props } from './furniture.js';
-import { dropBomb, dropMeteor, dropPiano, fireRocket, throwCouch, throwTomato, zap } from './hazards.js';
-import { spawnVikings } from './vikings.js';
+import { canvas, rand } from './canvas.ts';
+import { sfx } from './audio.ts';
+import { zeroG } from './physics.ts';
+import { LINES, damage, holdProp, pointer, say, screenFx, startDrag } from './state.ts';
+import { burst } from './effects.ts';
+import { B, points } from './dummy.ts';
+import { inProp, props } from './furniture.ts';
+import { dropBomb, dropMeteor, dropPiano, fireRocket, throwCouch, throwTomato, zap } from './hazards.ts';
+import { spawnVikings } from './vikings.ts';
 
 export const TOOLS = [
   { id: 'grab', icon: '✋', name: 'Grab', price: 0, key: '1', use: grab },

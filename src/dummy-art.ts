@@ -1,9 +1,9 @@
 // Drawing the dummy in its different looks
 
-import { OUT, RED, YEL, blob, chain, circle, ctx, joint, mix, rr, seg, star } from './canvas.js';
-import { save } from './save.js';
-import { bodyFlash, hurtT, idle, isDizzy, pointer, sessionDmg } from './state.js';
-import { B, blinkT, idling } from './dummy.js';
+import { OUT, RED, YEL, blob, chain, circle, ctx, joint, mix, rr, seg, star } from './canvas.ts';
+import { save } from './save.ts';
+import { bodyFlash, hurtT, idle, isDizzy, pointer, sessionDmg } from './state.ts';
+import { B, blinkT, idling } from './dummy.ts';
 
 // Crash-test-dummy target marker
 function marker(x, y, r) {

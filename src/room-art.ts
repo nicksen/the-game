@@ -1,7 +1,7 @@
 // Wall and floor patterns and the decor painted in each room
 
-import { H, W, box, circle, ctx, rr, seg, star } from './canvas.js';
-import { drawHatch } from './airlock.js';
+import { H, W, box, circle, ctx, rr, seg, star } from './canvas.ts';
+import { drawHatch } from './airlock.ts';
 
 export function drawWallPattern(type, fy) {
   ctx.save();

@@ -1,6 +1,6 @@
 // Drawing the throwable furniture
 
-import { box, circle, ctx, rr, seg } from './canvas.js';
+import { box, circle, ctx, rr, seg } from './canvas.ts';
 
 // Each draw function works in local coordinates: centered on the prop, floor at y = h / 2.
 export function drawBookshelf(w, h) {

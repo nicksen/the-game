@@ -1,6 +1,6 @@
 // The game loop: a fixed 60 Hz simulation step, then a render
 
-import { canvas, floorY, resize } from './canvas.js';
+import { canvas, floorY, resize } from './canvas.ts';
 import {
   bombs,
   couches,
@@ -11,16 +11,16 @@ import {
   resetDummyCondition,
   stepTimers,
   vikings,
-} from './state.js';
-import { stepParticles, stepTexts } from './effects.js';
-import { buildDummy, collideDummy, moveDummy, steerDummy } from './dummy.js';
-import { buildProps, stepProps } from './furniture.js';
-import { stepBombs, stepCouches, stepPianos, stepProjectiles, stepZap, stopZap } from './hazards.js';
-import { stepVikings } from './vikings.js';
-import { airlock, stepAirlock, updateAirlockBtn } from './airlock.js';
-import { render } from './render.js';
-import { openMenu, renderTools, trackPointer, updateHud } from './ui.js';
-import './pwa.js';
+} from './state.ts';
+import { stepParticles, stepTexts } from './effects.ts';
+import { buildDummy, collideDummy, moveDummy, steerDummy } from './dummy.ts';
+import { buildProps, stepProps } from './furniture.ts';
+import { stepBombs, stepCouches, stepPianos, stepProjectiles, stepZap, stopZap } from './hazards.ts';
+import { stepVikings } from './vikings.ts';
+import { airlock, stepAirlock, updateAirlockBtn } from './airlock.ts';
+import { render } from './render.ts';
+import { openMenu, renderTools, trackPointer, updateHud } from './ui.ts';
+import './pwa.ts';
 
 // The order matters: e.g. the airlock pulls on the dummy after it moves but before it collides.
 function step() {

@@ -1,6 +1,6 @@
 // Synthesized sound effects (no audio assets)
 
-import { pick, rand } from './canvas.js';
+import { pick, rand } from './canvas.ts';
 
 let AC = null,
   noiseBuf = null,

@@ -1,12 +1,12 @@
 // The dummy: a verlet ragdoll that stands itself back up and idles
 
-import { W, floorY, pick, rand } from './canvas.js';
-import { sfx } from './audio.js';
-import { GRAVITY, ITER, MAXV, phys, zeroG } from './physics.js';
-import { LINES, damage, drag, heldProp, idle, isDizzy, lastHit, pain, pointer, say } from './state.js';
-import { burst } from './effects.js';
-import { zapT } from './hazards.js';
-import { airlock } from './airlock.js';
+import { W, floorY, pick, rand } from './canvas.ts';
+import { sfx } from './audio.ts';
+import { GRAVITY, ITER, MAXV, phys, zeroG } from './physics.ts';
+import { LINES, damage, drag, heldProp, idle, isDizzy, lastHit, pain, pointer, say } from './state.ts';
+import { burst } from './effects.ts';
+import { zapT } from './hazards.ts';
+import { airlock } from './airlock.ts';
 
 export let points = [],
   sticks = [];

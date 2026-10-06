@@ -1,14 +1,14 @@
 // HUD, toolbar, menu and input
 
-import { canvas, resize } from './canvas.js';
-import { persist, save } from './save.js';
-import { ac, sfx, toggleMute } from './audio.js';
-import { LINES, combo, drag, dropProp, endDrag, heldProp, lastHit, pointer, say } from './state.js';
-import { LOOKS, chooseLook, lookId } from './dummy-art.js';
-import { ROOMS, currentRoom, enterRoom, renderThumb, roomId } from './rooms.js';
-import { openAirlock } from './airlock.js';
-import { TOOLS, offHere, setTool, tool, useTool } from './tools.js';
-import { resetScene } from './main.js';
+import { canvas, resize } from './canvas.ts';
+import { persist, save } from './save.ts';
+import { ac, sfx, toggleMute } from './audio.ts';
+import { LINES, combo, drag, dropProp, endDrag, heldProp, lastHit, pointer, say } from './state.ts';
+import { LOOKS, chooseLook, lookId } from './dummy-art.ts';
+import { ROOMS, currentRoom, enterRoom, renderThumb, roomId } from './rooms.ts';
+import { openAirlock } from './airlock.ts';
+import { TOOLS, offHere, setTool, tool, useTool } from './tools.ts';
+import { resetScene } from './main.ts';
 
 // ---------- HUD ----------
 const coinsEl = document.getElementById('coins');

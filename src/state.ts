@@ -1,11 +1,11 @@
 // Shared game state, the dummy's dialogue, and damage/coin bookkeeping
 
-import { pick, rand } from './canvas.js';
-import { persist, save } from './save.js';
-import { zeroG } from './physics.js';
-import { addText, burst } from './effects.js';
-import { AIRLOCK, airlock } from './airlock.js';
-import { updateHud } from './ui.js';
+import { pick, rand } from './canvas.ts';
+import { persist, save } from './save.ts';
+import { zeroG } from './physics.ts';
+import { addText, burst } from './effects.ts';
+import { AIRLOCK, airlock } from './airlock.ts';
+import { updateHud } from './ui.ts';
 
 // ---------- Input ----------
 export const pointer = { x: 0, y: 0, lastX: 0, lastY: 0, vx: 0, vy: 0, inside: false };

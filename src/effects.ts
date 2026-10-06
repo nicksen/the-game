@@ -1,8 +1,8 @@
 // Particles and floating comic text
 
-import { W, canvas, circle, ctx, mix, pick, rand, seg, star } from './canvas.js';
-import { phys } from './physics.js';
-import { particles, texts } from './state.js';
+import { W, canvas, circle, ctx, mix, pick, rand, seg, star } from './canvas.ts';
+import { phys } from './physics.ts';
+import { particles, texts } from './state.ts';
 
 // ---------- Particles ----------
 export function burst(x, y, n, type, o = {}) {

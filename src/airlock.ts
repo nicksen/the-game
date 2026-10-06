@@ -1,11 +1,11 @@
 // The airlock in zero-g rooms
 
-import { W, box, circle, ctx, floorY, rand } from './canvas.js';
-import { ac, sfx } from './audio.js';
-import { zeroG } from './physics.js';
-import { LINES, bombs, couches, drag, heldProp, particles, projectiles, say, screenFx } from './state.js';
-import { points } from './dummy.js';
-import { props } from './furniture.js';
+import { W, box, circle, ctx, floorY, rand } from './canvas.ts';
+import { ac, sfx } from './audio.ts';
+import { zeroG } from './physics.ts';
+import { LINES, bombs, couches, drag, heldProp, particles, projectiles, say, screenFx } from './state.ts';
+import { points } from './dummy.ts';
+import { props } from './furniture.ts';
 
 // Alarm for `warn` frames, then the hatch on the left wall opens for `open` frames and sucks everything toward it.
 // After closing it needs `recharge` frames before it can be opened again.

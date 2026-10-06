@@ -1,10 +1,10 @@
 // The viking horde
 
-import { OUT, W, box, chain, circle, ctx, floorY, pick, rand, rr, seg } from './canvas.js';
-import { sfx } from './audio.js';
-import { LINES, WORDS, WORD_COLORS, damage, pointer, say, vikings } from './state.js';
-import { addText, burst } from './effects.js';
-import { points } from './dummy.js';
+import { OUT, W, box, chain, circle, ctx, floorY, pick, rand, rr, seg } from './canvas.ts';
+import { sfx } from './audio.ts';
+import { LINES, WORDS, WORD_COLORS, damage, pointer, say, vikings } from './state.ts';
+import { addText, burst } from './effects.ts';
+import { points } from './dummy.ts';
 
 const HORDE_SIZE = 8,
   MAX_VIKINGS = 30;

@@ -1,6 +1,6 @@
 // Physics constants, with a gravity-free variant for zero-g rooms
 
-import { currentRoom } from './rooms.js';
+import { currentRoom } from './rooms.ts';
 
 export const GRAVITY = 0.6,
   DAMP = 0.99,

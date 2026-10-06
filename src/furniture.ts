@@ -1,12 +1,12 @@
 // Throwable furniture: which props each room has and how they move
 
-import { W, ctx, floorY, rand } from './canvas.js';
-import { sfx } from './audio.js';
-import { GRAVITY, phys } from './physics.js';
-import { damage, heldProp, pointer, screenFx } from './state.js';
-import { burst } from './effects.js';
-import { points } from './dummy.js';
-import { roomId } from './rooms.js';
+import { W, ctx, floorY, rand } from './canvas.ts';
+import { sfx } from './audio.ts';
+import { GRAVITY, phys } from './physics.ts';
+import { damage, heldProp, pointer, screenFx } from './state.ts';
+import { burst } from './effects.ts';
+import { points } from './dummy.ts';
+import { roomId } from './rooms.ts';
 import {
   drawBed,
   drawBookshelf,
@@ -25,7 +25,7 @@ import {
   drawToolbox,
   drawWaterCooler,
   drawWorkbench,
-} from './furniture-art.js';
+} from './furniture-art.ts';
 
 export const PROPS = {
   living: () => [

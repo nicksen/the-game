@@ -1,17 +1,17 @@
 // Drawing a frame
 
-import { H, OUT, W, ctx, drawShadow, floorY, rand, rr } from './canvas.js';
-import { pointer, screenFx, speech } from './state.js';
-import { drawParticles, drawTexts } from './effects.js';
-import { B } from './dummy.js';
-import { drawDummy, drawSkeleton } from './dummy-art.js';
-import { drawRoom } from './rooms.js';
-import { drawProp, propMoving, props } from './furniture.js';
-import { drawBolt, drawBombs, drawCouches, drawPianos, drawProjectiles, zapT, zapTarget } from './hazards.js';
-import { drawVikings } from './vikings.js';
-import { airlock } from './airlock.js';
-import { TOOLS, tool } from './tools.js';
-import { updateCombo } from './ui.js';
+import { H, OUT, W, ctx, drawShadow, floorY, rand, rr } from './canvas.ts';
+import { pointer, screenFx, speech } from './state.ts';
+import { drawParticles, drawTexts } from './effects.ts';
+import { B } from './dummy.ts';
+import { drawDummy, drawSkeleton } from './dummy-art.ts';
+import { drawRoom } from './rooms.ts';
+import { drawProp, propMoving, props } from './furniture.ts';
+import { drawBolt, drawBombs, drawCouches, drawPianos, drawProjectiles, zapT, zapTarget } from './hazards.ts';
+import { drawVikings } from './vikings.ts';
+import { airlock } from './airlock.ts';
+import { TOOLS, tool } from './tools.ts';
+import { updateCombo } from './ui.ts';
 
 // Back to front; everything inside the save/restore shakes with the screen.
 export function render() {

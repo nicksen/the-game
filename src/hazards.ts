@@ -1,13 +1,13 @@
 // Things the tools throw, drop or fire: bombs, pianos, couches, projectiles and lightning
 
-import { W, circle, ctx, drawShadow, floorY, pick, rand, rr, star } from './canvas.js';
-import { sfx } from './audio.js';
-import { phys, zeroG } from './physics.js';
-import { bombs, couches, damage, heldProp, pianos, pointer, projectiles, screenFx } from './state.js';
-import { addText, burst } from './effects.js';
-import { B, points } from './dummy.js';
-import { props } from './furniture.js';
-import { nearestPoint } from './tools.js';
+import { W, circle, ctx, drawShadow, floorY, pick, rand, rr, star } from './canvas.ts';
+import { sfx } from './audio.ts';
+import { phys, zeroG } from './physics.ts';
+import { bombs, couches, damage, heldProp, pianos, pointer, projectiles, screenFx } from './state.ts';
+import { addText, burst } from './effects.ts';
+import { B, points } from './dummy.ts';
+import { props } from './furniture.ts';
+import { nearestPoint } from './tools.ts';
 
 // ---------- Bombs ----------
 export function dropBomb() {

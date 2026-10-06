@@ -1,7 +1,7 @@
 // The rooms you can play in
 
-import { H, W, ctx, drawingInto, floorY } from './canvas.js';
-import { save } from './save.js';
+import { H, W, ctx, drawingInto, floorY } from './canvas.ts';
+import { save } from './save.ts';
 import {
   decorBedroom,
   decorGarage,
@@ -15,8 +15,8 @@ import {
   rugBedroom,
   rugLiving,
   spaceFloor,
-} from './room-art.js';
-import { PROPS, drawProp, makeProp } from './furniture.js';
+} from './room-art.ts';
+import { PROPS, drawProp, makeProp } from './furniture.ts';
 
 export const ROOMS = [
   {
