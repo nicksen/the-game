@@ -8,7 +8,7 @@ import { LINES, combo, drag, dropProp, endDrag, heldProp, lastHit, pointer, say 
 import { LOOKS, chooseLook, lookId } from './dummy-art.ts';
 import { ROOMS, currentRoom, enterRoom, renderThumb, roomId } from './rooms.ts';
 import { openAirlock } from './airlock.ts';
-import { TOOLS, offHere, setTool, tool, useTool } from './tools.ts';
+import { TOOLS, currentTool, offHere, setTool, tool, useTool } from './tools.ts';
 import { resetScene } from './main.ts';
 
 // ---------- HUD ----------
@@ -209,7 +209,7 @@ function chooseRoom(id) {
   persist();
   menuEl.classList.add('hidden');
   resetScene();
-  if (offHere(TOOLS.find((t) => t.id === tool))) setTool('punch');
+  if (offHere(currentTool())) setTool('punch');
   renderTools();
   say([`Ooh, the ${currentRoom().name.toLowerCase()}! Please be gentle.`], true);
 }

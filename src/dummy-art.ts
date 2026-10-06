@@ -53,7 +53,7 @@ export const LOOKS = {
     legW: 15,
   },
 };
-export let lookId = LOOKS[save.look] ? save.look : 'dummy';
+export let lookId = save.look && LOOKS[save.look] ? save.look : 'dummy';
 export function chooseLook(id) {
   lookId = save.look = id;
 }

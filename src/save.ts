@@ -10,7 +10,7 @@ interface Save {
 }
 export const save: Save = { coins: 0, unlocked: ['grab', 'punch', 'chicken'], total: 0 };
 try {
-  Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY)) || {});
+  Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null') || {});
 } catch {}
 export function persist() {
   try {

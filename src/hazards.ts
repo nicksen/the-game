@@ -578,7 +578,7 @@ export function zap() {
 
 // Electrocution: twitch the whole body and tick damage
 export function stepZap() {
-  if (zapT <= 0) return;
+  if (zapT <= 0 || !zapTarget) return;
   zapT--;
   if (!zapTarget.fake) {
     for (const p of points) {

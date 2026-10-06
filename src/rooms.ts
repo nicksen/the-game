@@ -80,8 +80,12 @@ export const ROOMS = [
     floorDecor: spaceFloor,
   },
 ];
-export let roomId = ROOMS.some((r) => r.id === save.room) ? save.room : 'living';
-export const currentRoom = () => ROOMS.find((r) => r.id === roomId);
+export let roomId = ROOMS.find((r) => r.id === save.room)?.id ?? 'living';
+export function currentRoom() {
+  const room = ROOMS.find((r) => r.id === roomId);
+  if (!room) throw new Error(`There's no room called ${roomId}`);
+  return room;
+}
 export function enterRoom(id) {
   roomId = save.room = id;
 }

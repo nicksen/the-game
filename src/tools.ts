@@ -38,9 +38,15 @@ export function setTool(id) {
   tool = id;
 }
 
+export function currentTool() {
+  const t = TOOLS.find((t) => t.id === tool);
+  if (!t) throw new Error(`There's no tool called ${tool}`);
+  return t;
+}
+
 export function useTool() {
   screenFx.swingT = 1;
-  TOOLS.find((t) => t.id === tool).use();
+  currentTool().use();
 }
 
 // Some tools make no sense without gravity
@@ -78,7 +84,7 @@ function grab() {
 }
 
 // Hit the body part nearest the pointer, knocking it along `dir` (or away from the pointer).
-function strike(reach, force, dmg, kind, dir = null) {
+function strike(reach, force, dmg, kind, dir: [number, number] | null = null) {
   const { p, d } = nearestPoint(pointer.x, pointer.y);
   if (!p || d > reach) {
     sfx.swoosh();

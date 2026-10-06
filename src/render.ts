@@ -10,7 +10,7 @@ import { drawProp, propMoving, props } from './furniture.ts';
 import { drawBolt, drawBombs, drawCouches, drawPianos, drawProjectiles, zapT, zapTarget } from './hazards.ts';
 import { drawVikings } from './vikings.ts';
 import { airlock } from './airlock.ts';
-import { TOOLS, tool } from './tools.ts';
+import { currentTool, tool } from './tools.ts';
 import { updateCombo } from './ui.ts';
 
 // Back to front; everything inside the save/restore shakes with the screen.
@@ -23,7 +23,7 @@ export function render() {
   drawShadow(B.pelvis.x, floorY() - B.pelvis.y, 50);
   drawBombs();
   // Flickers to an x-ray while electrocuted
-  if (zapT > 0 && !zapTarget.fake && (zapT >> 2) % 2) drawSkeleton();
+  if (zapT > 0 && zapTarget && !zapTarget.fake && (zapT >> 2) % 2) drawSkeleton();
   else drawDummy();
   drawVikings();
   for (const p of props) if (propMoving(p)) drawProp(p);
@@ -87,7 +87,7 @@ function drawSpeech() {
 
 function drawCursor() {
   if (!pointer.inside || tool === 'grab') return;
-  const t = TOOLS.find((t) => t.id === tool);
+  const t = currentTool();
   ctx.save();
   ctx.translate(pointer.x, pointer.y);
   ctx.rotate(-screenFx.swingT * 0.9);
