@@ -8,12 +8,32 @@ import { burst } from './effects.ts';
 import { zapT } from './hazards.ts';
 import { airlock } from './airlock.ts';
 
-export let points = [],
-  sticks = [];
+export interface Point {
+  x: number;
+  y: number;
+  // Where the point was last step; verlet integration takes the velocity from x - px, y - py
+  px: number;
+  py: number;
+  r: number;
+  cd: number;
+}
+interface Stick {
+  a: Point;
+  b: Point;
+  len: number;
+  stiff: number;
+  min: boolean;
+}
+type BodyPart =
+  'head' | 'neck' | 'pelvis' | 'lElbow' | 'lHand' | 'rElbow' | 'rHand' | 'lKnee' | 'lFoot' | 'rKnee' | 'rFoot';
+
+export let points: Point[] = [],
+  sticks: Stick[] = [];
 export let standK = 0,
   idling = false,
   blinkT = 0;
-export const B = {};
+// Filled in by buildDummy(), which runs before anything reads it
+export const B = {} as Record<BodyPart, Point>;
 
 export function buildDummy() {
   points = [];
@@ -22,7 +42,7 @@ export function buildDummy() {
   const float = zeroG(),
     cx = W / 2,
     fy = floorY() - (float ? 160 : 0);
-  const mk = (name, dx, dy, r) => {
+  const mk = (name: BodyPart, dx: number, dy: number, r: number) => {
     const p = { x: cx + dx, y: fy + dy, px: cx + dx + (float ? 0.5 : 0), py: fy + dy - (float ? 0.2 : 0), r, cd: 0 };
     points.push(p);
     B[name] = p;
@@ -40,7 +60,7 @@ export function buildDummy() {
   mk('rFoot', 16, -11, 11);
 
   // minRatio: only push apart when closer than len * minRatio (keeps limbs from folding flat)
-  const s = (a, b, stiff = 1, minRatio = 0) => {
+  const s = (a: BodyPart, b: BodyPart, stiff = 1, minRatio = 0) => {
     const len = Math.hypot(B[a].x - B[b].x, B[a].y - B[b].y);
     sticks.push({ a: B[a], b: B[b], len: minRatio ? len * minRatio : len, stiff, min: !!minRatio });
   };
