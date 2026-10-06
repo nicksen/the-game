@@ -5,7 +5,15 @@ import { phys } from './physics.ts';
 import { particles, texts } from './state.ts';
 
 // ---------- Particles ----------
-export function burst(x, y, n, type, o = {}) {
+interface BurstOptions {
+  speed?: number;
+  // Extra upward kick on top of the random direction
+  up?: number;
+  life?: number;
+  size?: number;
+  color?: string;
+}
+export function burst(x, y, n, type, o: BurstOptions = {}) {
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2,
       s = (o.speed || 5) * rand(0.3, 1.3);
