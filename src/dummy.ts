@@ -32,6 +32,8 @@ export let points: Point[] = [],
 export let standK = 0,
   idling = false,
   blinkT = 0;
+// Where the pelvis was when it started getting up, once a foot was on the floor
+let getUpX: number | null = null;
 // Filled in by buildDummy(), which runs before anything reads it
 export const B = {} as Record<BodyPart, Point>;
 
@@ -209,18 +211,23 @@ function pull(p: Point, tx: number, ty: number, k: number) {
 }
 
 const HIP_HALF_WIDTH = 16;
+const SWAY_DAMPING = 0.5;
 // Pelvis height above the floor when standing, and low enough that it's still getting up
 const STANDING_PELVIS = 80,
   LOW_PELVIS = 40;
 // How high a foot can lift and still count as standing on the floor, e.g. on tiptoe for a stretch
 const TIPTOE = 10;
+// 0 while the pelvis is still low, rising to 1 once it's at standing height
+function uprightness(fy: number) {
+  return Math.min(1, Math.max(0, (fy - B.pelvis.y - LOW_PELVIS) / (STANDING_PELVIS - LOW_PELVIS)));
+}
+
 // Foot on the floor under its hip, knee on the line from hip to foot. `side` is -1 for the left leg, 1 for the right.
 // The feet stay planted while it rises over them, and only shuffle under the hips once it's nearly up; moving
 // them sooner drags the whole body across the floor.
 function placeLeg(knee: Point, foot: Point, side: number, fy: number) {
   const pv = B.pelvis;
-  const upright = Math.min(1, Math.max(0, (fy - pv.y - LOW_PELVIS) / (STANDING_PELVIS - LOW_PELVIS)));
-  pull(foot, pv.x + side * HIP_HALF_WIDTH, fy - foot.r, 0.1 * standK * upright);
+  pull(foot, pv.x + side * HIP_HALF_WIDTH, fy - foot.r, 0.1 * standK * uprightness(fy));
   pull(knee, (pv.x + foot.x) / 2, (pv.y + foot.y) / 2, 0.3 * standK);
 }
 
@@ -228,13 +235,19 @@ function placeLeg(knee: Point, foot: Point, side: number, fy: number) {
 export function steerDummy(now: number, fy: number) {
   const dizzy = isDizzy();
   const canStand = !drag && !dizzy && pain < 35 && now - lastHit > 1500;
-  standK = canStand ? Math.min(1, standK + 0.02) : 0;
+  standK = canStand ? Math.min(1, standK + 0.1) : 0;
+  if (standK === 0) getUpX = null;
   if (standK > 0 && phys().g) {
     const footOnFloor = B.lFoot.y > fy - B.lFoot.r - TIPTOE || B.rFoot.y > fy - B.rFoot.r - TIPTOE;
-    if (footOnFloor) {
-      const fx = (B.lFoot.x + B.rFoot.x) / 2;
-      // Its standing height above the floor, not above the feet, so going up on tiptoe doesn't lift it further
-      pull(B.pelvis, fx, fy - B.lFoot.r - 70, 0.12 * standK);
+    if (!footOnFloor) getUpX = null;
+    else {
+      getUpX ??= B.pelvis.x;
+      // It stands up where it was lying, and the feet come in under it. Its height is measured from the floor, not
+      // the feet, so going up on tiptoe doesn't lift it further.
+      pull(B.pelvis, getUpX, fy - B.lFoot.r - 70, 0.12 * standK);
+      // Soak up sideways swing while it stands, so it settles instead of swaying; hits stop it standing, so they still
+      // knock it flying
+      for (const p of [B.pelvis, B.neck]) p.px += (p.x - p.px) * SWAY_DAMPING * standK;
       pull(B.neck, B.pelvis.x, B.pelvis.y - 65, 0.08 * standK);
       pull(B.head, B.pelvis.x, B.pelvis.y - 105, 0.12 * standK);
       placeLeg(B.lKnee, B.lFoot, -1, fy);

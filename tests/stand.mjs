@@ -12,10 +12,12 @@ const FPS = 60;
 const STRAIGHT_PELVIS = 80,
   STANDING_PELVIS = 70;
 const MAX_KNEE_OFF_LINE = 12;
+// It pops back up rather than clambering
+const GET_UP_TIME = 0.5;
 const MAX_ELBOW_INWARD = 4;
 const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch'];
-// Feet shuffle a little under the hips as it straightens up
-const MAX_GET_UP_DRIFT = 30;
+// A little sway while it straightens up
+const MAX_GET_UP_DRIFT = 15;
 // Feet count as on the floor within 3px; reaching up for a stretch lifts it onto its toes a little more
 const FOOT_ON_FLOOR = 3,
   STRETCH_LIFT = 10;
@@ -86,7 +88,6 @@ try {
         poses.push({
           standK,
           pelvisX: b.pelvis.x,
-          feetX: (b.lFoot.x + b.rFoot.x) / 2,
           idleAction,
           pelvis: up(b.pelvis),
           leftFootLift: up(b.lFoot) - b.lFoot.r,
@@ -119,17 +120,17 @@ try {
   // Recovery counts from when it's allowed to stand again; if the fall never stopped it, from the shove
   const allowedAgain = afterShove.findIndex((p, i) => i > 0 && p.standK > 0 && afterShove[i - 1].standK === 0);
   const allowedAt = Math.max(0, allowedAgain);
-  const recovered = afterShove.slice(allowedAt + 4 * FPS, allowedAt + 9 * FPS);
+  const recovered = afterShove.slice(allowedAt + GET_UP_TIME * FPS, allowedAt + (GET_UP_TIME + 5) * FPS);
   const lowestAfter = Math.min(...recovered.map((p) => p.pelvis));
   check(
     fell && recovered.length === 5 * FPS && lowestAfter >= STANDING_PELVIS,
-    `after a knockdown${fell ? '' : ' (but it never fell)'}, stands within 4s of being allowed to and stays up for 5s (lowest pelvis ${lowestAfter.toFixed(0)}px)`,
+    `after a knockdown${fell ? '' : ' (but it never fell)'}, stands within ${GET_UP_TIME}s of being allowed to and stays up for 5s (lowest pelvis ${lowestAfter.toFixed(0)}px)`,
   );
 
-  // Getting up means rising over its feet, not sliding across the floor
+  // It gets up where it lies: the feet come in under it, rather than the body moving over to the feet
   const startsUp = afterShove[allowedAt];
-  const drift = Math.abs(afterShove[allowedAt + 4 * FPS].pelvisX - startsUp.feetX);
-  check(drift <= MAX_GET_UP_DRIFT, `gets up over its feet (ends ${drift.toFixed(0)}px from where its feet were)`);
+  const drift = Math.abs(afterShove[allowedAt + GET_UP_TIME * FPS].pelvisX - startsUp.pelvisX);
+  check(drift <= MAX_GET_UP_DRIFT, `gets up in place (pelvis moves ${drift.toFixed(0)}px sideways)`);
 
   // Legs that end up crossed in a heap, as they can after a tumble, should uncross as it gets up
   await page.evaluate(() => {
