@@ -32,6 +32,8 @@ export let points: Point[] = [],
 export let standK = 0,
   idling = false,
   blinkT = 0;
+// Where it's walking to, while it walks
+export let walkTo: number | null = null;
 // Where the pelvis was when it started getting up, once a foot was on the floor
 let getUpX: number | null = null;
 // Filled in by buildDummy(), which runs before anything reads it
@@ -142,14 +144,45 @@ function solveStick(s: Stick) {
 }
 
 // Little routines the dummy plays when left alone.
-const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch'];
+const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch', 'walk'];
+const NEEDS_FLOOR = ['tap', 'walk'];
+// A spot a short stroll away, on a side with room for it, clear of the walls; null if neither side has room
+function pickWalkTarget() {
+  const x = B.pelvis.x;
+  const sides = [
+    { dir: -1, room: x - WALL_MARGIN },
+    { dir: 1, room: W - WALL_MARGIN - x },
+  ].filter((s) => s.room >= SHORTEST_WALK);
+  if (!sides.length) return null;
+  const { dir, room } = pick(sides);
+  return x + dir * rand(SHORTEST_WALK, Math.min(LONGEST_WALK, room));
+}
+
+// The arm on the other side from the stepping foot swings out a little with each step. Sideways only: lifting a
+// hand would lift the whole dummy.
+function swingArm(n: Point) {
+  const side = gait.stepping === 0 ? 1 : -1,
+    swing = Math.sin((Math.PI * gait.t) / STEP_FRAMES),
+    hand = side < 0 ? B.lHand : B.rHand;
+  pull(hand, n.x + side * (28 + swing * ARM_SWING), hand.y, 0.03);
+}
+
 function stepIdle(fy: number) {
   if (++idle.t > idle.dur) {
-    // No foot tapping when there's no floor under your feet
-    idle.action = pick(IDLE_ACTIONS.filter((a) => a !== idle.action && !(a === 'tap' && zeroG())));
+    // No foot tapping or walking when there's no floor under your feet
+    const allowed = IDLE_ACTIONS.filter((a) => a !== idle.action && !(NEEDS_FLOOR.includes(a) && zeroG()));
+    idle.action = pick(allowed);
+    walkTo = idle.action === 'walk' ? pickWalkTarget() : null;
+    // No room for a stroll, so something else instead
+    if (idle.action === 'walk' && walkTo === null) idle.action = pick(allowed.filter((a) => a !== 'walk'));
     idle.t = 0;
     idle.dur = idle.action === 'breathe' ? rand(180, 300) : rand(150, 220);
-    const lines = { wave: LINES.wave, watch: LINES.watch, stretch: LINES.stretch }[idle.action];
+    if (walkTo !== null) {
+      startGait(walkTo);
+      // A walk ends when it arrives, not on a timer
+      idle.dur = Infinity;
+    }
+    const lines = { wave: LINES.wave, watch: LINES.watch, stretch: LINES.stretch, walk: LINES.walk }[idle.action];
     if (lines && Math.random() < 0.5) say(lines);
   }
   const t = idle.t,
@@ -167,6 +200,14 @@ function stepIdle(fy: number) {
   pull(B.head, pv.x + Math.sin(t * 0.015) * 3, pv.y - 105 + Math.sin(t * 0.05) * 2, 0.05);
 
   switch (idle.action) {
+    case 'walk':
+      if (walkTo === null || getUpX === null) break;
+      getUpX += Math.sign(walkTo - getUpX) * Math.min(WALK_SPEED, Math.abs(walkTo - getUpX));
+      stepGait();
+      // Arrived, and the foot that was stepping has just landed
+      if (getUpX === walkTo && gait.t === 0) idle.dur = idle.t;
+      swingArm(n);
+      break;
     case 'wave':
       pull(B.lElbow, n.x - 40, n.y - 5, k);
       pull(B.lHand, n.x - 45 + Math.sin(t * 0.3) * 15, n.y - 50, k);
@@ -211,6 +252,15 @@ function pull(p: Point, tx: number, ty: number, k: number) {
 }
 
 const HIP_HALF_WIDTH = 16;
+const WALK_SPEED = 1.2,
+  SHORTEST_WALK = 150,
+  LONGEST_WALK = 350,
+  STEP_FRAMES = 15,
+  STEP_HEIGHT = 12,
+  STRIDE_AHEAD = 10,
+  ARM_SWING = 14,
+  FOOT_GRIP = 0.5,
+  WALL_MARGIN = 120;
 const SWAY_DAMPING = 0.5,
   HIP_HOLD = 0.4;
 // Pelvis height above the floor when standing, and low enough that it's still getting up
@@ -228,8 +278,54 @@ function uprightness(fy: number) {
 // them sooner drags the whole body across the floor.
 function placeLeg(knee: Point, foot: Point, side: number, fy: number) {
   const pv = B.pelvis;
-  pull(foot, pv.x + side * HIP_HALF_WIDTH, fy - foot.r, 0.1 * standK * uprightness(fy));
+  if (walking() && walkTo !== null && getUpX !== null) stepFoot(foot, side, fy, getUpX, walkTo);
+  else pull(foot, pv.x + side * HIP_HALF_WIDTH, fy - foot.r, 0.1 * standK * uprightness(fy));
   pull(knee, (pv.x + foot.x) / 2, (pv.y + foot.y) / 2, 0.3 * standK);
+}
+
+const walking = () => idling && idle.action === 'walk';
+
+// The walk cycle: which foot is stepping (0 left, 1 right), how far through its step, where it lifted off, and
+// where each foot was last put down
+export const gait = { stepping: 0, t: 0, liftedAt: 0, plantedAt: [0, 0] };
+// The leading foot steps first, so the hips never pass over it
+function startGait(towards: number) {
+  gait.stepping = towards < B.pelvis.x ? 0 : 1;
+  gait.t = 0;
+  gait.liftedAt = gait.stepping === 0 ? B.lFoot.x : B.rFoot.x;
+  gait.plantedAt = [B.lFoot.x, B.rFoot.x];
+}
+function stepGait() {
+  if (++gait.t <= STEP_FRAMES) return;
+  const feet = [B.lFoot, B.rFoot];
+  gait.plantedAt[gait.stepping] = feet[gait.stepping].x;
+  gait.stepping = 1 - gait.stepping;
+  gait.t = 0;
+  gait.liftedAt = feet[gait.stepping].x;
+}
+// It faces us, so walking is a side-step: the leading foot reaches out ahead of its hip and the trailing foot
+// closes in under its own, so the feet never cross. The planted foot stays put; the stepping foot arcs from where
+// it lifted off to its spot beside where the hips will be when the step ends.
+function stepFoot(foot: Point, side: number, fy: number, hips: number, target: number) {
+  const i = side < 0 ? 0 : 1,
+    floor = fy - foot.r;
+  if (i !== gait.stepping) {
+    pull(foot, gait.plantedAt[i], floor, FOOT_GRIP);
+    return;
+  }
+  const dir = Math.sign(target - hips),
+    s = gait.t / STEP_FRAMES;
+  const hipsAtLanding = hips + dir * WALK_SPEED * (STEP_FRAMES - gait.t);
+  const leading = side === dir;
+  const landing = hipsAtLanding + side * HIP_HALF_WIDTH + (leading ? dir * STRIDE_AHEAD : 0);
+  // Eased sideways, so the foot lifts before it travels and lands before it stops, rather than scraping the floor
+  const across = s * s * (3 - 2 * s);
+  pull(
+    foot,
+    gait.liftedAt + (landing - gait.liftedAt) * across,
+    floor - Math.sin(Math.PI * s) * STEP_HEIGHT,
+    FOOT_GRIP,
+  );
 }
 
 // Get back up when not too beaten up, idle when left alone, and blink now and then.

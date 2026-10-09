@@ -89,6 +89,12 @@ export const LINES = {
     'I could do this all day.',
   ],
   wave: ['Hi there!', 'Hellooo!', 'Yoo-hoo!'],
+  walk: [
+    'Just stretching my legs...',
+    'Going for a little stroll.',
+    'Left, right, left, right...',
+    'Nice room you have here.',
+  ],
   watch: ['Any time now...', 'Tick tock...', 'I have a meeting at three.'],
   stretch: ['*yaaawn*', "Ahh, that's the spot."],
   dizzy: ['I see stars...', 'Wh-where am I?', 'Is it Tuesday?', 'Mama, the birds...'],

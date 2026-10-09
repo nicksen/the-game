@@ -8,7 +8,9 @@ import { fileURLToPath } from 'url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FPS = 60;
-const SPACE_ROOM = 6;
+const SPACE_ROOM = 6,
+  // Long enough to go through the idle animations it has in space
+  SPACE_SECONDS = 60;
 // The pelvis is 80px up when standing straight; 70 allows a slight bend at the knees
 const STRAIGHT_PELVIS = 80,
   STANDING_PELVIS = 70;
@@ -17,9 +19,19 @@ const MAX_KNEE_OFF_LINE = 12;
 const GET_UP_TIME = 0.5,
   UNCROSS_TIME = 2;
 const MAX_ELBOW_INWARD = 4;
-// Long enough for every idle animation
-const IDLE_SECONDS = 60;
-const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch'];
+// Walks stay this far from the walls
+const WALL_MARGIN = 120,
+  WALL_CLEARANCE = 100;
+// Long enough for every idle animation, including a few whole walks
+const IDLE_SECONDS = 90;
+// A step lifts a foot clear of the floor; a planted foot barely moves
+const STEP_LIFT = 6,
+  MAX_FOOT_SLIDE = 2;
+// Too narrow to walk at least 150px from the middle and stay 120px clear of the walls
+const NARROW_ROOM = 500;
+const MIN_WALK = 100,
+  ARRIVE_WITHIN = 20;
+const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch', 'walk'];
 // A little sway while it straightens up
 const MAX_GET_UP_DRIFT = 15;
 // Feet count as on the floor within 3px; reaching up for a stretch lifts it onto its toes a little more
@@ -51,8 +63,8 @@ const errors = [];
 
 // A fresh game in the given room (1 is the living room), on a frozen clock and the same random seed every time, so
 // each scenario is repeatable and none can affect another
-async function freshGame(room = 1) {
-  const page = await browser.newPage({ viewport: { width: 1200, height: 750 } });
+async function freshGame(room = 1, width = 1200) {
+  const page = await browser.newPage({ viewport: { width, height: 750 } });
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => {
     let seed = 12345;
@@ -77,7 +89,7 @@ async function freshGame(room = 1) {
       const poses = [];
       for (let i = 0; i < frames; i++) {
         window.__frame();
-        const { standK, floorY, body: b, idleAction } = window.__pose();
+        const { standK, floorY, body: b, idleAction, walkTo, roomWidth, steppingFoot } = window.__pose();
         const up = (p) => floorY - p.y;
         // How far a knee is from the straight line between the pelvis and its foot
         const offLine = (knee, foot) => {
@@ -95,7 +107,11 @@ async function freshGame(room = 1) {
         poses.push({
           standK,
           pelvisX: b.pelvis.x,
+          footX: [b.lFoot.x, b.rFoot.x],
           idleAction,
+          walkTo,
+          steppingFoot,
+          roomWidth,
           pelvis: up(b.pelvis),
           leftFootLift: up(b.lFoot) - b.lFoot.r,
           rightFootLift: up(b.rFoot) - b.rFoot.r,
@@ -152,7 +168,7 @@ try {
   await page.close();
 
   // Legs that end up crossed in a heap, as they can after a tumble, should uncross as it gets up. Checked within
-  // its first idle animation (breathing), before it moves on to another.
+  // its first idle animation (breathing), before it could start walking.
   ({ page, run } = await freshGame());
   await run(1);
   await page.evaluate(() => {
@@ -183,17 +199,80 @@ try {
   const played = new Set(idling.map((p) => p.idleAction));
   const idleLowest = Math.min(...idling.map((p) => p.pelvis)),
     idleHighest = Math.max(...idling.map((p) => p.pelvis));
-  // Feet stay down, except going up on tiptoe for a stretch and the left foot tapping
+  // Feet stay down, except going up on tiptoe for a stretch, the left foot tapping, and the stepping foot walking
   const feetDown = (p) =>
     p.idleAction === 'stretch'
       ? Math.max(p.leftFootLift, p.rightFootLift) <= STRETCH_LIFT
       : p.idleAction === 'tap'
         ? p.rightFootLift <= FOOT_ON_FLOOR
-        : Math.max(p.leftFootLift, p.rightFootLift) <= FOOT_ON_FLOOR;
+        : p.idleAction === 'walk'
+          ? [p.leftFootLift, p.rightFootLift][1 - p.steppingFoot] <= FOOT_ON_FLOOR
+          : Math.max(p.leftFootLift, p.rightFootLift) <= FOOT_ON_FLOOR;
   const liftedAt = idling.find((p) => !feetDown(p));
   check(
     played.size === IDLE_ACTIONS.length && !liftedAt && idleLowest >= STANDING_PELVIS && idleHighest <= TALLEST_PELVIS,
     `stays standing through ${IDLE_SECONDS}s of idling (played ${[...played].join(', ')}; pelvis ${idleLowest.toFixed(0)}–${idleHighest.toFixed(0)}px${liftedAt ? `; a foot lifted during ${liftedAt.idleAction}` : ''})`,
+  );
+
+  const walking = idling.filter((p) => p.idleAction === 'walk');
+  const badTarget = walking.find(
+    (p) => p.walkTo === null || p.walkTo < WALL_MARGIN || p.walkTo > p.roomWidth - WALL_MARGIN,
+  );
+  check(
+    walking.length > 0 && !badTarget,
+    `every walk heads for a spot inside the room, ${WALL_MARGIN}px clear of the walls${badTarget ? ` (but one headed for ${badTarget.walkTo})` : ''}`,
+  );
+
+  // Each whole walk on its own, from the frame it starts to the frame the next action begins. Walks already under
+  // way when the recording starts, or still going when it ends, are left out.
+  const walks = [];
+  idling.forEach((p, i) => {
+    if (p.idleAction !== 'walk' || i === 0) return;
+    if (idling[i - 1].idleAction !== 'walk') walks.push([]);
+    walks.at(-1)?.push(p);
+  });
+  if (idling.at(-1).idleAction === 'walk') walks.pop();
+  const shortOrOff = walks.find((w) => {
+    const covered = Math.abs(w.at(-1).pelvisX - w[0].pelvisX),
+      miss = Math.abs(w.at(-1).pelvisX - w.at(-1).walkTo);
+    return covered < MIN_WALK || miss > ARRIVE_WITHIN;
+  });
+  check(
+    walks.length > 0 && !shortOrOff,
+    `each of ${walks.length} walks covers at least ${MIN_WALK}px and ends within ${ARRIVE_WITHIN}px of its target` +
+      (shortOrOff
+        ? ` (one went from ${shortOrOff[0].pelvisX.toFixed(0)} to ${shortOrOff.at(-1).pelvisX.toFixed(0)}, aiming for ${shortOrOff.at(-1).walkTo.toFixed(0)})`
+        : ''),
+  );
+
+  const nearestWall = Math.min(...walking.map((p) => Math.min(p.pelvisX, p.roomWidth - p.pelvisX)));
+  check(
+    nearestWall >= WALL_CLEARANCE,
+    `walking never takes it within ${WALL_CLEARANCE}px of a wall (closest ${nearestWall.toFixed(0)}px)`,
+  );
+
+  // Stepping, not sliding: each foot lifts in turn, never both at once, and a foot on the floor stays put
+  const steps = walks.flat();
+  const bothUp = steps.filter((p) => Math.min(p.leftFootLift, p.rightFootLift) > FOOT_ON_FLOOR).length;
+  // The planted foot is the one not stepping; judged while it stays planted across both frames
+  const slide = Math.max(
+    0,
+    ...walks.flatMap((w) =>
+      w.slice(1).map((p, i) => {
+        const planted = 1 - p.steppingFoot;
+        return w[i].steppingFoot === p.steppingFoot ? Math.abs(p.footX[planted] - w[i].footX[planted]) : 0;
+      }),
+    ),
+  );
+  const highest = (f) => Math.max(...steps.map((p) => [p.leftFootLift, p.rightFootLift][f]));
+  check(
+    steps.length > 0 &&
+      highest(0) > STEP_LIFT &&
+      highest(1) > STEP_LIFT &&
+      bothUp === 0 &&
+      slide < MAX_FOOT_SLIDE &&
+      steps.every((p) => p.feetInOrder),
+    `walking steps (feet lift ${highest(0).toFixed(0)}/${highest(1).toFixed(0)}px, both up in ${bothUp} frames, planted foot slides up to ${slide.toFixed(1)}px a frame)`,
   );
 
   const worstElbow = Math.max(...idling.map((p) => p.elbowInward));
@@ -213,9 +292,42 @@ try {
 
   await page.close();
 
+  // A hit mid-walk knocks it down like any other time, and it gets up where it lands
+  ({ page, run } = await freshGame());
+  let pose;
+  for (let i = 0; i < IDLE_SECONDS * FPS && pose?.idleAction !== 'walk'; i += 30) pose = (await run(0.5)).at(-1);
+  await run(0.5);
+  for (let i = 0; i < 5; i++) {
+    const { x, y } = await page.evaluate(() => window.__pose().body.pelvis);
+    await page.mouse.click(x, y);
+    await run(0.1);
+  }
+  const afterHit = await run(8);
+  const hitDown = afterHit.some((p) => p.pelvis < STANDING_PELVIS);
+  const upAgain = afterHit.findIndex((p, i) => i > 0 && p.standK > 0 && afterHit[i - 1].standK === 0);
+  const hitDrift = Math.max(
+    ...afterHit.slice(upAgain, upAgain + 2 * FPS).map((p) => Math.abs(p.pelvisX - afterHit[upAgain].pelvisX)),
+  );
+  const upInTime = afterHit[upAgain + GET_UP_TIME * FPS]?.pelvis >= STANDING_PELVIS;
+  check(
+    pose?.idleAction === 'walk' && hitDown && upAgain > 0 && upInTime && hitDrift <= MAX_GET_UP_DRIFT,
+    `a hit mid-walk knocks it down, and it gets up in place (moves up to ${hitDrift.toFixed(0)}px)`,
+  );
+  await page.close();
+
+  // In a room too narrow for a proper stroll (like a phone held upright), it doesn't walk
+  ({ page, run } = await freshGame(1, NARROW_ROOM));
+  await run(1);
+  const narrowActions = new Set((await run(IDLE_SECONDS)).map((p) => p.idleAction));
+  check(
+    !narrowActions.has('walk'),
+    `doesn't walk in a ${NARROW_ROOM}px-wide room (idled: ${[...narrowActions].join(', ')})`,
+  );
+  await page.close();
+
   // The space room has no gravity, so it should float, not stand
   ({ page, run } = await freshGame(SPACE_ROOM));
-  const floating = await run(10);
+  const floating = await run(SPACE_SECONDS);
   const standingInSpace =
     floating.filter(
       (p) =>
@@ -229,6 +341,8 @@ try {
     `doesn't stand in zero-g (standing ${(standingInSpace * 100).toFixed(0)}% of the time)`,
   );
 
+  const spaceActions = new Set(floating.map((p) => p.idleAction));
+  check(!spaceActions.has('walk'), `never walks in zero-g (idled: ${[...spaceActions].join(', ')})`);
   await page.close();
 
   check(errors.length === 0, `no errors in the page${errors.length ? ': ' + errors.join(' | ') : ''}`);
