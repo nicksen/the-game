@@ -159,6 +159,9 @@ function stepIdle(fy: number) {
   // Relaxed arms and a gentle breathing sway
   pull(B.lHand, n.x - 28, n.y + 65, 0.03);
   pull(B.rHand, n.x + 28, n.y + 65, 0.03);
+  // Elbows out to the sides, so the arms bend away from the body
+  pull(B.lElbow, n.x - 32, n.y + 30, 0.03);
+  pull(B.rElbow, n.x + 32, n.y + 30, 0.03);
   pull(B.head, pv.x + Math.sin(t * 0.015) * 3, pv.y - 105 + Math.sin(t * 0.05) * 2, 0.05);
 
   switch (idle.action) {

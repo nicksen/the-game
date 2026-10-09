@@ -12,6 +12,8 @@ const FPS = 60;
 const STRAIGHT_PELVIS = 80,
   STANDING_PELVIS = 70;
 const MAX_KNEE_OFF_LINE = 12;
+const MAX_ELBOW_INWARD = 4;
+const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch'];
 // Feet shuffle a little under the hips as it straightens up
 const MAX_GET_UP_DRIFT = 30;
 // Feet count as on the floor within 3px; reaching up for a stretch lifts it onto its toes a little more
@@ -74,16 +76,25 @@ try {
             dy = foot.y - b.pelvis.y;
           return Math.abs(dy * (knee.x - b.pelvis.x) - dx * (knee.y - b.pelvis.y)) / Math.hypot(dx, dy);
         };
+        // Which side of the line from the neck to its hand an elbow is on: positive is to the left (outwards for
+        // the left arm), negative to the right
+        const sideOfArm = (elbow, hand) => {
+          const dx = hand.x - b.neck.x,
+            dy = hand.y - b.neck.y;
+          return (dx * (elbow.y - b.neck.y) - dy * (elbow.x - b.neck.x)) / Math.hypot(dx, dy);
+        };
         poses.push({
           standK,
           pelvisX: b.pelvis.x,
           feetX: (b.lFoot.x + b.rFoot.x) / 2,
-          stretching: idleAction === 'stretch',
+          idleAction,
           pelvis: up(b.pelvis),
-          feetLift: Math.max(up(b.lFoot) - b.lFoot.r, up(b.rFoot) - b.rFoot.r),
+          leftFootLift: up(b.lFoot) - b.lFoot.r,
+          rightFootLift: up(b.rFoot) - b.rFoot.r,
           feetInOrder: b.lFoot.x < b.pelvis.x && b.pelvis.x < b.rFoot.x,
           kneesInOrder: b.lKnee.x < b.rKnee.x,
           kneeOffLine: Math.max(offLine(b.lKnee, b.lFoot), offLine(b.rKnee, b.rFoot)),
+          elbowInward: Math.max(-sideOfArm(b.lElbow, b.lHand), sideOfArm(b.rElbow, b.rHand)),
         });
       }
       return poses;
@@ -136,18 +147,28 @@ try {
   const uncrossing = await run(4);
   check(uncrossing.at(-1).feetInOrder && uncrossing.at(-1).kneesInOrder, 'crossed legs uncross within 4s');
 
-  // Idle long enough to go through the idle animations (wave, stretch, tap, look, watch)
-  const idling = await run(30);
+  // Idle long enough to go through every idle animation
+  const idling = await run(60);
+  const played = new Set(idling.map((p) => p.idleAction));
   const idleLowest = Math.min(...idling.map((p) => p.pelvis)),
     idleHighest = Math.max(...idling.map((p) => p.pelvis));
-  const liftWhile = (stretching) =>
-    Math.max(0, ...idling.filter((p) => p.stretching === stretching).map((p) => p.feetLift));
+  // Feet stay down, except going up on tiptoe for a stretch and the left foot tapping
+  const feetDown = (p) =>
+    p.idleAction === 'stretch'
+      ? Math.max(p.leftFootLift, p.rightFootLift) <= STRETCH_LIFT
+      : p.idleAction === 'tap'
+        ? p.rightFootLift <= FOOT_ON_FLOOR
+        : Math.max(p.leftFootLift, p.rightFootLift) <= FOOT_ON_FLOOR;
+  const liftedAt = idling.find((p) => !feetDown(p));
   check(
-    liftWhile(false) <= FOOT_ON_FLOOR &&
-      liftWhile(true) <= STRETCH_LIFT &&
-      idleLowest >= STANDING_PELVIS &&
-      idleHighest <= TALLEST_PELVIS,
-    `stays standing through 30s of idling (pelvis ${idleLowest.toFixed(0)}–${idleHighest.toFixed(0)}px, feet lift ${liftWhile(false).toFixed(1)}px, ${liftWhile(true).toFixed(1)}px when stretching)`,
+    played.size === IDLE_ACTIONS.length && !liftedAt && idleLowest >= STANDING_PELVIS && idleHighest <= TALLEST_PELVIS,
+    `stays standing through 60s of idling (played ${[...played].join(', ')}; pelvis ${idleLowest.toFixed(0)}–${idleHighest.toFixed(0)}px${liftedAt ? `; a foot lifted during ${liftedAt.idleAction}` : ''})`,
+  );
+
+  const worstElbow = Math.max(...idling.map((p) => p.elbowInward));
+  check(
+    worstElbow <= MAX_ELBOW_INWARD,
+    `while idling, the elbows bend outwards (worst elbow ${worstElbow.toFixed(0)}px inwards)`,
   );
 
   const standing = [...nextFive, ...recovered, ...idling];
@@ -162,8 +183,12 @@ try {
   await page.click('#rooms .room:last-child');
   const floating = await run(10);
   const standingInSpace =
-    floating.filter((p) => p.pelvis >= STANDING_PELVIS && p.pelvis <= TALLEST_PELVIS && p.feetLift <= FOOT_ON_FLOOR)
-      .length / floating.length;
+    floating.filter(
+      (p) =>
+        p.pelvis >= STANDING_PELVIS &&
+        p.pelvis <= TALLEST_PELVIS &&
+        Math.max(p.leftFootLift, p.rightFootLift) <= FOOT_ON_FLOOR,
+    ).length / floating.length;
   // It drifts and may bump into the floor, but shouldn't hold a standing pose
   check(
     standingInSpace <= 0.1,
