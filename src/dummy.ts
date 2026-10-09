@@ -211,7 +211,8 @@ function pull(p: Point, tx: number, ty: number, k: number) {
 }
 
 const HIP_HALF_WIDTH = 16;
-const SWAY_DAMPING = 0.5;
+const SWAY_DAMPING = 0.5,
+  HIP_HOLD = 0.4;
 // Pelvis height above the floor when standing, and low enough that it's still getting up
 const STANDING_PELVIS = 80,
   LOW_PELVIS = 40;
@@ -245,6 +246,8 @@ export function steerDummy(now: number, fy: number) {
       // It stands up where it was lying, and the feet come in under it. Its height is measured from the floor, not
       // the feet, so going up on tiptoe doesn't lift it further.
       pull(B.pelvis, getUpX, fy - B.lFoot.r - 70, 0.12 * standK);
+      // Hips stay put on the floor while the upper body swings up over them
+      pull(B.pelvis, getUpX, B.pelvis.y, HIP_HOLD * standK);
       // Soak up sideways swing while it stands, so it settles instead of swaying; hits stop it standing, so they still
       // knock it flying
       for (const p of [B.pelvis, B.neck]) p.px += (p.x - p.px) * SWAY_DAMPING * standK;

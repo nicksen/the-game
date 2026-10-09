@@ -8,13 +8,17 @@ import { fileURLToPath } from 'url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FPS = 60;
+const SPACE_ROOM = 6;
 // The pelvis is 80px up when standing straight; 70 allows a slight bend at the knees
 const STRAIGHT_PELVIS = 80,
   STANDING_PELVIS = 70;
 const MAX_KNEE_OFF_LINE = 12;
 // It pops back up rather than clambering
-const GET_UP_TIME = 0.5;
+const GET_UP_TIME = 0.5,
+  UNCROSS_TIME = 2;
 const MAX_ELBOW_INWARD = 4;
+// Long enough for every idle animation
+const IDLE_SECONDS = 60;
 const IDLE_ACTIONS = ['breathe', 'wave', 'stretch', 'tap', 'look', 'watch'];
 // A little sway while it straightens up
 const MAX_GET_UP_DRIFT = 15;
@@ -43,9 +47,12 @@ writeFileSync(dir + '/index.html', readFileSync(ROOT + 'index.html', 'utf8').rep
 copyFileSync(ROOT + 'style.css', dir + '/style.css');
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
-try {
+const errors = [];
+
+// A fresh game in the given room (1 is the living room), on a frozen clock and the same random seed every time, so
+// each scenario is repeatable and none can affect another
+async function freshGame(room = 1) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 750 } });
-  const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => {
     let seed = 12345;
@@ -62,7 +69,7 @@ try {
     };
   });
   await page.goto('file://' + dir + '/index.html');
-  await page.click('#rooms .room:nth-child(1)');
+  await page.click(`#rooms .room:nth-child(${room})`);
 
   // Advance `seconds`, returning the pose after every frame, measured up from the floor and across from the pelvis
   const run = (seconds) =>
@@ -100,7 +107,11 @@ try {
       }
       return poses;
     }, seconds * FPS);
+  return { page, run };
+}
 
+try {
+  let { page, run } = await freshGame();
   const firstSecond = await run(1);
   const nextFive = await run(5);
   const lowest = Math.min(...[firstSecond.at(-1), ...nextFive].map((p) => p.pelvis));
@@ -109,7 +120,11 @@ try {
     `stands within 1s of spawning and stays up for 5s (lowest pelvis ${lowest.toFixed(0)}px)`,
   );
 
+  await page.close();
+
   // Knock it down the way a player does: a few punches (the starting tool) to the body
+  ({ page, run } = await freshGame());
+  await run(1);
   for (let i = 0; i < 5; i++) {
     const { x, y } = await page.evaluate(() => window.__pose().body.pelvis);
     await page.mouse.click(x, y);
@@ -127,12 +142,19 @@ try {
     `after a knockdown${fell ? '' : ' (but it never fell)'}, stands within ${GET_UP_TIME}s of being allowed to and stays up for 5s (lowest pelvis ${lowestAfter.toFixed(0)}px)`,
   );
 
-  // It gets up where it lies: the feet come in under it, rather than the body moving over to the feet
+  // It gets up where it lies: the feet come in under it, rather than the body moving over to the feet or swaying
   const startsUp = afterShove[allowedAt];
-  const drift = Math.abs(afterShove[allowedAt + GET_UP_TIME * FPS].pelvisX - startsUp.pelvisX);
-  check(drift <= MAX_GET_UP_DRIFT, `gets up in place (pelvis moves ${drift.toFixed(0)}px sideways)`);
+  const drift = Math.max(
+    ...afterShove.slice(allowedAt, allowedAt + 2 * FPS).map((p) => Math.abs(p.pelvisX - startsUp.pelvisX)),
+  );
+  check(drift <= MAX_GET_UP_DRIFT, `gets up in place (pelvis moves up to ${drift.toFixed(0)}px sideways)`);
 
-  // Legs that end up crossed in a heap, as they can after a tumble, should uncross as it gets up
+  await page.close();
+
+  // Legs that end up crossed in a heap, as they can after a tumble, should uncross as it gets up. Checked within
+  // its first idle animation (breathing), before it moves on to another.
+  ({ page, run } = await freshGame());
+  await run(1);
   await page.evaluate(() => {
     const b = window.__pose().body;
     for (const [l, r] of [
@@ -145,11 +167,19 @@ try {
       }
     }
   });
-  const uncrossing = await run(4);
-  check(uncrossing.at(-1).feetInOrder && uncrossing.at(-1).kneesInOrder, 'crossed legs uncross within 4s');
+  const uncrossing = await run(UNCROSS_TIME);
+  check(
+    uncrossing.at(-1).feetInOrder && uncrossing.at(-1).kneesInOrder,
+    `crossed legs uncross within ${UNCROSS_TIME}s`,
+  );
+
+  await page.close();
 
   // Idle long enough to go through every idle animation
-  const idling = await run(60);
+  ({ page, run } = await freshGame());
+  // Let it settle out of its spawn pose first
+  await run(1);
+  const idling = await run(IDLE_SECONDS);
   const played = new Set(idling.map((p) => p.idleAction));
   const idleLowest = Math.min(...idling.map((p) => p.pelvis)),
     idleHighest = Math.max(...idling.map((p) => p.pelvis));
@@ -163,7 +193,7 @@ try {
   const liftedAt = idling.find((p) => !feetDown(p));
   check(
     played.size === IDLE_ACTIONS.length && !liftedAt && idleLowest >= STANDING_PELVIS && idleHighest <= TALLEST_PELVIS,
-    `stays standing through 60s of idling (played ${[...played].join(', ')}; pelvis ${idleLowest.toFixed(0)}–${idleHighest.toFixed(0)}px${liftedAt ? `; a foot lifted during ${liftedAt.idleAction}` : ''})`,
+    `stays standing through ${IDLE_SECONDS}s of idling (played ${[...played].join(', ')}; pelvis ${idleLowest.toFixed(0)}–${idleHighest.toFixed(0)}px${liftedAt ? `; a foot lifted during ${liftedAt.idleAction}` : ''})`,
   );
 
   const worstElbow = Math.max(...idling.map((p) => p.elbowInward));
@@ -172,16 +202,19 @@ try {
     `while idling, the elbows bend outwards (worst elbow ${worstElbow.toFixed(0)}px inwards)`,
   );
 
-  const standing = [...nextFive, ...recovered, ...idling];
+  // After a knockdown, judged once it's had as long to sort its legs out as the crossed-legs check allows
+  const settled = afterShove.slice(allowedAt + UNCROSS_TIME * FPS, allowedAt + (GET_UP_TIME + 5) * FPS);
+  const standing = [...nextFive, ...settled, ...idling];
   const worstKnee = Math.max(...standing.map((p) => p.kneeOffLine));
   check(
     standing.every((p) => p.feetInOrder) && worstKnee <= MAX_KNEE_OFF_LINE,
     `while standing, the feet stay on their own sides and the knees near straight (worst knee ${worstKnee.toFixed(0)}px off)`,
   );
 
+  await page.close();
+
   // The space room has no gravity, so it should float, not stand
-  await page.click('#roomBtn');
-  await page.click('#rooms .room:last-child');
+  ({ page, run } = await freshGame(SPACE_ROOM));
   const floating = await run(10);
   const standingInSpace =
     floating.filter(
@@ -195,6 +228,8 @@ try {
     standingInSpace <= 0.1,
     `doesn't stand in zero-g (standing ${(standingInSpace * 100).toFixed(0)}% of the time)`,
   );
+
+  await page.close();
 
   check(errors.length === 0, `no errors in the page${errors.length ? ': ' + errors.join(' | ') : ''}`);
 } finally {
