@@ -79,7 +79,6 @@ export function buildDummy() {
   s('neck', 'rHand', 0.3, 0.6);
   s('pelvis', 'lFoot', 0.3, 0.6);
   s('pelvis', 'rFoot', 0.3, 0.6);
-  s('lKnee', 'rKnee', 0.2, 0.8);
 }
 
 // Clamp inside the room; with bounce=true also reflect velocity and report impact speed.
@@ -168,10 +167,11 @@ function stepIdle(fy: number) {
       pull(B.lHand, n.x - 45 + Math.sin(t * 0.3) * 15, n.y - 50, k);
       break;
     case 'stretch':
-      pull(B.lElbow, n.x - 30, n.y - 35, k);
-      pull(B.lHand, n.x - 20, n.y - 75, k);
-      pull(B.rElbow, n.x + 30, n.y - 35, k);
-      pull(B.rHand, n.x + 20, n.y - 75, k);
+      // Gently: pulling the arms up any harder lifts the whole dummy off the floor
+      pull(B.lElbow, n.x - 30, n.y - 35, k * 0.5);
+      pull(B.lHand, n.x - 20, n.y - 75, k * 0.5);
+      pull(B.rElbow, n.x + 30, n.y - 35, k * 0.5);
+      pull(B.rHand, n.x + 20, n.y - 75, k * 0.5);
       break;
     case 'tap':
       pull(B.lHand, n.x + 14, n.y + 30, k);
@@ -202,6 +202,23 @@ function pull(p: Point, tx: number, ty: number, k: number) {
   p.x += dx;
   p.y += dy;
   p.px += (p.x - p.px) * 0.12;
+  p.py += (p.y - p.py) * 0.12;
+}
+
+const HIP_HALF_WIDTH = 16;
+// Pelvis height above the floor when standing, and low enough that it's still getting up
+const STANDING_PELVIS = 80,
+  LOW_PELVIS = 40;
+// How high a foot can lift and still count as standing on the floor, e.g. on tiptoe for a stretch
+const TIPTOE = 10;
+// Foot on the floor under its hip, knee on the line from hip to foot. `side` is -1 for the left leg, 1 for the right.
+// The feet stay planted while it rises over them, and only shuffle under the hips once it's nearly up; moving
+// them sooner drags the whole body across the floor.
+function placeLeg(knee: Point, foot: Point, side: number, fy: number) {
+  const pv = B.pelvis;
+  const upright = Math.min(1, Math.max(0, (fy - pv.y - LOW_PELVIS) / (STANDING_PELVIS - LOW_PELVIS)));
+  pull(foot, pv.x + side * HIP_HALF_WIDTH, fy - foot.r, 0.1 * standK * upright);
+  pull(knee, (pv.x + foot.x) / 2, (pv.y + foot.y) / 2, 0.3 * standK);
 }
 
 // Get back up when not too beaten up, idle when left alone, and blink now and then.
@@ -210,13 +227,15 @@ export function steerDummy(now: number, fy: number) {
   const canStand = !drag && !dizzy && pain < 35 && now - lastHit > 1500;
   standK = canStand ? Math.min(1, standK + 0.02) : 0;
   if (standK > 0 && phys().g) {
-    const footOnFloor = B.lFoot.y > fy - B.lFoot.r - 3 || B.rFoot.y > fy - B.rFoot.r - 3;
+    const footOnFloor = B.lFoot.y > fy - B.lFoot.r - TIPTOE || B.rFoot.y > fy - B.rFoot.r - TIPTOE;
     if (footOnFloor) {
-      const fx = (B.lFoot.x + B.rFoot.x) / 2,
-        fyy = Math.max(B.lFoot.y, B.rFoot.y);
-      pull(B.pelvis, fx, fyy - 70, 0.12 * standK);
+      const fx = (B.lFoot.x + B.rFoot.x) / 2;
+      // Its standing height above the floor, not above the feet, so going up on tiptoe doesn't lift it further
+      pull(B.pelvis, fx, fy - B.lFoot.r - 70, 0.12 * standK);
       pull(B.neck, B.pelvis.x, B.pelvis.y - 65, 0.08 * standK);
       pull(B.head, B.pelvis.x, B.pelvis.y - 105, 0.12 * standK);
+      placeLeg(B.lKnee, B.lFoot, -1, fy);
+      placeLeg(B.rKnee, B.rFoot, 1, fy);
     }
   }
 

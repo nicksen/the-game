@@ -27,6 +27,8 @@ jobs:
         run: mise run lint
       - name: Check the code is formatted
         run: mise run format:check
+      - name: Check the dummy stands up
+        run: mise run test:stand
       - name: Check the installable app works offline
         run: mise run test:pwa
       - name: Collect the game's files

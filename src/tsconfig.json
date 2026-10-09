@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["."]
+  "include": [".", "../tests/stand-entry.ts"]
 }

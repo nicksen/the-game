@@ -67,6 +67,11 @@ description = "Replay a scripted play session and compare it with the recorded b
 depends = ["install", "bundle"]
 run = "bun tests/replay.mjs"
 
+[tasks."test:stand"]
+description = "Check the dummy gets up and stays up, with its legs under it"
+depends = ["install"]
+run = "bun tests/stand.mjs"
+
 [tasks."test:exe"]
 description = "Build the executable and replay the same session against it"
 depends = ["install", "build"]
